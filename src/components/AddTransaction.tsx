@@ -9,6 +9,7 @@ import { Transaction, Category } from '@/context/TransactionContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlusCircle, MinusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
 
 interface AddTransactionProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>('other');
   const [isExpense, setIsExpense] = useState(true);
+  const [remarks, setRemarks] = useState('');
   const [error, setError] = useState('');
   
   // Reset form or fill with edit data when dialog opens
@@ -49,11 +51,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
         setAmount(editTransaction.amount.toString());
         setCategory(editTransaction.category);
         setIsExpense(editTransaction.isExpense);
+        setRemarks(editTransaction.remarks || '');
       } else {
         setDescription('');
         setAmount('');
         setCategory('other');
         setIsExpense(true);
+        setRemarks('');
       }
       setError('');
     }
@@ -77,7 +81,8 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
       amount: Number(amount),
       category,
       date: new Date().toISOString(),
-      isExpense
+      isExpense,
+      remarks: remarks.trim() || undefined
     };
     
     onSave(transaction);
@@ -163,6 +168,17 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="remarks">Remarks (optional)</Label>
+            <Textarea
+              id="remarks"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Any additional notes about this transaction..."
+              className="resize-none h-20 neon-border glass-card text-white"
+            />
           </div>
           
           {error && (

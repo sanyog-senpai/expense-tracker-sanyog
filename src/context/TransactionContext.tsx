@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 
 // Types
@@ -20,6 +19,7 @@ export interface Transaction {
   date: string;
   category: Category;
   isExpense: boolean;
+  remarks?: string; // Optional remarks field
 }
 
 interface TransactionState {
@@ -102,7 +102,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
           description: 'Lunch at Sushi Place',
           date: '2023-06-15T12:30:00.000Z',
           category: 'food',
-          isExpense: true
+          isExpense: true,
+          remarks: 'Business lunch with client'
         },
         {
           id: '2',
@@ -110,7 +111,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
           description: 'Movie tickets',
           date: '2023-06-14T19:00:00.000Z',
           category: 'entertainment',
-          isExpense: true
+          isExpense: true,
+          remarks: 'Date night'
         },
         {
           id: '3',
@@ -118,7 +120,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
           description: 'Grocery shopping',
           date: '2023-06-13T10:15:00.000Z',
           category: 'food',
-          isExpense: true
+          isExpense: true,
+          remarks: 'Weekly groceries'
         },
         {
           id: '4',
@@ -126,7 +129,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
           description: 'Salary deposit',
           date: '2023-06-01T09:00:00.000Z',
           category: 'other',
-          isExpense: false
+          isExpense: false,
+          remarks: 'Monthly salary'
         },
         {
           id: '5',
@@ -134,7 +138,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
           description: 'Gas',
           date: '2023-06-10T11:45:00.000Z',
           category: 'transportation',
-          isExpense: true
+          isExpense: true,
+          remarks: 'Road trip'
         }
       ];
       dispatch({ type: 'SET_TRANSACTIONS', payload: sampleTransactions });
