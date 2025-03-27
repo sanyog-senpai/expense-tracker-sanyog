@@ -1,7 +1,6 @@
-
 import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTransactions, Transaction } from '@/context/TransactionContext';
+import { useTransactions, Transaction, TransactionProvider } from '@/context/TransactionContext';
 import { formatCurrency, formatDate, formatTime, getCategoryIcon } from '@/utils/dateUtils';
 import Layout from '@/components/Layout';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
@@ -10,7 +9,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import CategoryPill from '@/components/CategoryPill';
 import { cn } from '@/lib/utils';
 
-const TransactionDetail = () => {
+// This component needs to be inside the TransactionProvider
+const TransactionDetailContent = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { state } = useTransactions();
@@ -188,6 +188,15 @@ const TransactionDetail = () => {
         </div>
       </div>
     </Layout>
+  );
+};
+
+// Wrap the component with the TransactionProvider
+const TransactionDetail = () => {
+  return (
+    <TransactionProvider>
+      <TransactionDetailContent />
+    </TransactionProvider>
   );
 };
 
