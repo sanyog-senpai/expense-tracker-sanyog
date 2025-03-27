@@ -1,13 +1,15 @@
 
 import React, { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import FloatingNavigation from './FloatingNavigation';
 
 interface LayoutProps {
   children: ReactNode;
   className?: string;
+  hideNavigation?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, className }) => {
+const Layout: React.FC<LayoutProps> = ({ children, className, hideNavigation = false }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-dark via-background to-background overflow-hidden relative">
       {/* Background decorative elements */}
@@ -21,13 +23,16 @@ const Layout: React.FC<LayoutProps> = ({ children, className }) => {
       <div className="relative z-10">
         <div 
           className={cn(
-            "container max-w-2xl mx-auto px-4 py-6 space-y-6",
+            "container max-w-2xl mx-auto px-4 py-6 space-y-6 pb-24", // Added padding bottom to make space for the navigation
             className
           )}
         >
           {children}
         </div>
       </div>
+      
+      {/* Floating navigation */}
+      {!hideNavigation && <FloatingNavigation />}
     </div>
   );
 };

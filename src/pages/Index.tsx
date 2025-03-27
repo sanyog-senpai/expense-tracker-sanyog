@@ -1,14 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import Header from '@/components/Header';
 import Dashboard from '@/components/Dashboard';
 import TransactionList from '@/components/TransactionList';
 import AddTransaction from '@/components/AddTransaction';
 import { TransactionProvider, useTransactions, Transaction } from '@/context/TransactionContext';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ChartBar, List } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 
 const ExpenseTrackerApp = () => {
@@ -16,6 +14,18 @@ const ExpenseTrackerApp = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions'>(
+    tabParam === 'transactions' ? 'transactions' : 'dashboard'
+  );
+  
+  // Update active tab when URL search param changes
+  useEffect(() => {
+    setActiveTab(tabParam === 'transactions' ? 'transactions' : 'dashboard');
+  }, [tabParam]);
   
   const handleAddClick = () => {
     setEditingTransaction(undefined);
@@ -54,42 +64,42 @@ const ExpenseTrackerApp = () => {
     }
     setEditingTransaction(undefined);
   };
+
+  const handleTabChange = (tab: 'dashboard' | 'transactions') => {
+    setActiveTab(tab);
+    // Update URL to reflect tab change
+    if (tab === 'dashboard') {
+      navigate('/');
+    } else {
+      navigate('/?tab=transactions');
+    }
+  };
   
   return (
     <Layout>
       <Header onAddClick={handleAddClick} />
       
-      <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="dashboard" className="flex items-center justify-center">
-            <ChartBar className="h-4 w-4 mr-2" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="transactions" className="flex items-center justify-center">
-            <List className="h-4 w-4 mr-2" />
-            Transactions
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="dashboard" className="mt-4 slide-up">
+      {activeTab === 'dashboard' ? (
+        <div className="mt-4 slide-up">
           <Dashboard transactions={state.transactions} />
-          <Separator className="my-4" />
-          <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
-          <TransactionList 
-            transactions={state.transactions.slice(0, 5)} 
-            onEditTransaction={handleEditTransaction}
-            onDeleteTransaction={handleDeleteTransaction}
-          />
-        </TabsContent>
-        
-        <TabsContent value="transactions" className="mt-4 slide-up">
+          <div className="my-6">
+            <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
+            <TransactionList 
+              transactions={state.transactions.slice(0, 5)} 
+              onEditTransaction={handleEditTransaction}
+              onDeleteTransaction={handleDeleteTransaction}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 slide-up">
           <TransactionList 
             transactions={state.transactions} 
             onEditTransaction={handleEditTransaction}
             onDeleteTransaction={handleDeleteTransaction}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
       
       <AddTransaction 
         isOpen={isAddModalOpen}
