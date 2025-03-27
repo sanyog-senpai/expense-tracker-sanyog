@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Transaction } from '@/context/TransactionContext';
-import { getCategoryColor } from '@/utils/dateUtils';
 
 interface ExpenseChartProps {
   transactions: Transaction[];
@@ -24,23 +23,22 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
     return Object.entries(expensesByCategory).map(([name, value]) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
       value,
-      color: getCategoryColor(name).replace('bg-', 'text-').replace('-500', '-400')
     }));
   }, [transactions]);
   
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#FF6B6B'];
+  // Futuristic color palette
+  const COLORS = ['#a269ff', '#5271ff', '#ff56ee', '#6bffb8', '#ff6b8b', '#ffb156'];
   
   if (chartData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full bg-muted/30 rounded-xl">
-        <p className="text-muted-foreground text-sm">No expense data to display</p>
+      <div className="flex items-center justify-center h-[200px] bg-white/5 rounded-xl">
+        <p className="text-white/70 text-sm">No expense data to display</p>
       </div>
     );
   }
   
   return (
-    <div className="w-full h-[250px] bg-card rounded-xl p-4 fade-in">
-      <h3 className="text-sm font-medium mb-2">Expense Breakdown</h3>
+    <div className="w-full h-[250px] fade-in">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -52,22 +50,32 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
             outerRadius={80}
             paddingAngle={5}
             dataKey="value"
+            strokeWidth={2}
+            stroke="rgba(255, 255, 255, 0.1)"
           >
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell 
+                key={`cell-${index}`} 
+                fill={COLORS[index % COLORS.length]} 
+                className="filter drop-shadow-lg"
+              />
             ))}
           </Pie>
           <Tooltip 
             formatter={(value: number) => [`$${value.toFixed(2)}`, '']}
             contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              borderRadius: '8px',
-              border: 'none',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              backgroundColor: 'rgba(30, 25, 45, 0.9)',
+              borderRadius: '12px',
+              border: '1px solid rgba(162, 105, 255, 0.3)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+              color: 'white',
               padding: '8px 12px'
             }}
           />
-          <Legend />
+          <Legend 
+            formatter={(value: string) => <span className="text-white/70">{value}</span>}
+            iconType="circle"
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

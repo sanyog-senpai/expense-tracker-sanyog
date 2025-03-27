@@ -55,9 +55,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
   
   if (transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-[300px] bg-muted/30 rounded-xl p-8 text-center">
-        <p className="text-muted-foreground text-sm mb-2">No transactions yet</p>
-        <p className="text-xs text-muted-foreground">
+      <div className="flex flex-col items-center justify-center h-[300px] glass-card neon-border rounded-xl p-8 text-center">
+        <p className="text-white/70 text-sm mb-2">No transactions yet</p>
+        <p className="text-xs text-white/50">
           Add your first transaction to start tracking your expenses
         </p>
       </div>
@@ -68,12 +68,12 @@ const TransactionList: React.FC<TransactionListProps> = ({
     <div className="space-y-4">
       <div className="flex flex-col space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
           <Input
             placeholder="Search transactions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-white/5 border-white/10 focus:border-neon-purple/50 text-white placeholder:text-white/30"
           />
         </div>
         
@@ -83,10 +83,25 @@ const TransactionList: React.FC<TransactionListProps> = ({
             onValueChange={setFilter} 
             className="w-full"
           >
-            <TabsList className="grid grid-cols-3">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="expense">Expense</TabsTrigger>
-              <TabsTrigger value="income">Income</TabsTrigger>
+            <TabsList className="grid grid-cols-3 bg-white/5 p-0.5">
+              <TabsTrigger 
+                value="all" 
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
+              >
+                All
+              </TabsTrigger>
+              <TabsTrigger 
+                value="expense"
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
+              >
+                Expense
+              </TabsTrigger>
+              <TabsTrigger 
+                value="income"
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
+              >
+                Income
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           
@@ -94,13 +109,13 @@ const TransactionList: React.FC<TransactionListProps> = ({
             value={categoryFilter} 
             onValueChange={setCategoryFilter}
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] bg-white/5 border-white/10 text-white">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+            <SelectContent className="bg-purple-dark border-white/10">
+              <SelectItem value="all" className="text-white">All Categories</SelectItem>
               {categories.map((category) => (
-                <SelectItem key={category} value={category}>
+                <SelectItem key={category} value={category} className="text-white">
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </SelectItem>
               ))}
@@ -112,7 +127,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
               variant="ghost" 
               size="icon" 
               onClick={clearFilters}
-              className="h-9 w-9"
+              className="h-9 w-9 text-white/70 hover:text-white hover:bg-white/10"
             >
               <FilterX className="h-4 w-4" />
             </Button>
@@ -121,14 +136,14 @@ const TransactionList: React.FC<TransactionListProps> = ({
       </div>
       
       {filteredTransactions.length === 0 ? (
-        <div className="flex items-center justify-center h-[200px] bg-muted/30 rounded-xl">
-          <p className="text-muted-foreground text-sm">No transactions match your filters</p>
+        <div className="flex items-center justify-center h-[200px] glass-card neon-border rounded-xl">
+          <p className="text-white/70 text-sm">No transactions match your filters</p>
         </div>
       ) : (
         <div className="space-y-6">
           {groupDates.map((date) => (
             <div key={date} className="space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground">{date}</h3>
+              <h3 className="text-sm font-medium text-white/70 px-1">{date}</h3>
               <div className="space-y-2">
                 {groupedTransactions[date].map((transaction) => (
                   <TransactionItem
