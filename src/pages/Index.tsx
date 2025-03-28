@@ -76,7 +76,7 @@ const ExpenseTrackerApp = () => {
   };
   
   return (
-    <Layout>
+    <Layout onAddClick={handleAddClick}>
       <Header onAddClick={handleAddClick} />
       
       {activeTab === 'dashboard' ? (

@@ -3,7 +3,7 @@ import React from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import { formatCurrency, formatTime, getCategoryIcon } from '@/utils/dateUtils';
 import CategoryPill from './CategoryPill';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,7 +18,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   onEditClick, 
   onDeleteClick 
 }) => {
-  const { id, amount, description, date, category, isExpense, remarks } = transaction;
+  const { id, amount, description, date, category, isExpense, isSavings, remarks } = transaction;
   const navigate = useNavigate();
   
   const handleItemClick = () => {
@@ -34,6 +34,17 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
     e.stopPropagation();
     onDeleteClick(id);
   };
+
+  // Determine color based on transaction type
+  const getTransactionColor = () => {
+    if (isSavings) return "bg-blue-500/20 text-blue-400";
+    return isExpense ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400";
+  };
+
+  const getAmountColor = () => {
+    if (isSavings) return "text-blue-400";
+    return isExpense ? "text-red-400" : "text-green-400";
+  };
   
   return (
     <div 
@@ -44,9 +55,11 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
         <div className="flex items-center space-x-4">
           <div className={cn(
             "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300",
-            isExpense ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400"
+            getTransactionColor()
           )}>
-            <span className="text-lg">{getCategoryIcon(category)}</span>
+            <span className="text-lg">
+              {isSavings ? <PiggyBank className="h-5 w-5" /> : getCategoryIcon(category)}
+            </span>
           </div>
           <div>
             <h3 className="text-sm font-medium text-white">{description}</h3>
@@ -55,13 +68,18 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                 {formatTime(date)}
               </span>
               <CategoryPill category={category} className="text-[10px] py-0.5 px-2" />
+              {isSavings && (
+                <span className="bg-blue-500/20 text-blue-400 rounded-full text-[10px] py-0.5 px-2">
+                  Savings
+                </span>
+              )}
             </div>
           </div>
         </div>
         <div className="flex items-center">
           <span className={cn(
             "font-medium",
-            isExpense ? "text-red-400" : "text-green-400"
+            getAmountColor()
           )}>
             {isExpense ? '-' : '+'}{formatCurrency(amount)}
           </span>

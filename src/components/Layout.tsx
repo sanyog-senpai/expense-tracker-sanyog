@@ -7,9 +7,15 @@ interface LayoutProps {
   children: ReactNode;
   className?: string;
   hideNavigation?: boolean;
+  onAddClick?: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, className, hideNavigation = false }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  className, 
+  hideNavigation = false,
+  onAddClick
+}) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-dark via-background to-background overflow-hidden relative">
       {/* Background decorative elements */}
@@ -32,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children, className, hideNavigation = f
       </div>
       
       {/* Floating navigation */}
-      {!hideNavigation && <FloatingNavigation />}
+      {!hideNavigation && <FloatingNavigation onAddClick={onAddClick} />}
     </div>
   );
 };

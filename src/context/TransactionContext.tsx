@@ -19,6 +19,7 @@ export interface Transaction {
   date: string;
   category: Category;
   isExpense: boolean;
+  isSavings?: boolean; // New property for savings
   remarks?: string; // Optional remarks field
 }
 
@@ -140,6 +141,16 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
           category: 'transportation',
           isExpense: true,
           remarks: 'Road trip'
+        },
+        {
+          id: '6',
+          amount: 200.00,
+          description: 'Emergency Fund',
+          date: '2023-06-05T14:20:00.000Z',
+          category: 'other',
+          isExpense: false,
+          isSavings: true,
+          remarks: 'Monthly savings'
         }
       ];
       dispatch({ type: 'SET_TRANSACTIONS', payload: sampleTransactions });

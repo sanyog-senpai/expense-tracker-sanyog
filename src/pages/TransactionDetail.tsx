@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import { useTransactions } from '@/context/TransactionContext';
+import { useTransactions, TransactionProvider } from '@/context/TransactionContext';
 import { formatCurrency, formatDate } from '@/utils/dateUtils';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, PiggyBank } from 'lucide-react';
 
 // Wrap the component with the TransactionProvider
 const TransactionDetail = () => {
@@ -43,7 +44,10 @@ const TransactionDetailContent = () => {
   }
   
   const sign = transaction.isExpense ? '-' : '+';
-  const amountColor = transaction.isExpense ? 'text-red-500' : 'text-green-500';
+  let amountColor = transaction.isExpense ? 'text-red-500' : 'text-green-500';
+  if (transaction.isSavings) {
+    amountColor = 'text-blue-500';
+  }
   
   return (
     <Layout hideNavigation>
@@ -75,7 +79,16 @@ const TransactionDetailContent = () => {
         </div>
         <div className="flex justify-between">
           <span className="text-white/70">Type</span>
-          <span className="text-white">{transaction.isExpense ? 'Expense' : 'Income'}</span>
+          <span className="flex items-center text-white">
+            {transaction.isSavings ? (
+              <>
+                <PiggyBank className="h-4 w-4 mr-1 text-blue-400" />
+                Savings
+              </>
+            ) : (
+              transaction.isExpense ? 'Expense' : 'Income'
+            )}
+          </span>
         </div>
       </div>
     </Layout>

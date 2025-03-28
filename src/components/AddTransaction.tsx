@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Transaction, Category } from '@/context/TransactionContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlusCircle, MinusCircle } from 'lucide-react';
+import { PlusCircle, MinusCircle, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -39,7 +39,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>('other');
-  const [isExpense, setIsExpense] = useState(true);
+  const [transactionType, setTransactionType] = useState<'expense' | 'income' | 'savings'>('expense');
   const [remarks, setRemarks] = useState('');
   const [error, setError] = useState('');
   
@@ -50,13 +50,17 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
         setDescription(editTransaction.description);
         setAmount(editTransaction.amount.toString());
         setCategory(editTransaction.category);
-        setIsExpense(editTransaction.isExpense);
+        if (editTransaction.isSavings) {
+          setTransactionType('savings');
+        } else {
+          setTransactionType(editTransaction.isExpense ? 'expense' : 'income');
+        }
         setRemarks(editTransaction.remarks || '');
       } else {
         setDescription('');
         setAmount('');
         setCategory('other');
-        setIsExpense(true);
+        setTransactionType('expense');
         setRemarks('');
       }
       setError('');
@@ -81,7 +85,8 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
       amount: Number(amount),
       category,
       date: new Date().toISOString(),
-      isExpense,
+      isExpense: transactionType === 'expense',
+      isSavings: transactionType === 'savings',
       remarks: remarks.trim() || undefined
     };
     
@@ -100,16 +105,17 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
         
         <div className="py-4 space-y-4">
           <Tabs 
-            defaultValue={isExpense ? "expense" : "income"} 
+            defaultValue={transactionType} 
             className="w-full" 
-            onValueChange={(val) => setIsExpense(val === "expense")}
+            value={transactionType}
+            onValueChange={(val: 'expense' | 'income' | 'savings') => setTransactionType(val)}
           >
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger 
                 value="expense" 
                 className={cn(
                   "flex items-center justify-center",
-                  isExpense && "data-[state=active]:bg-red-100 data-[state=active]:text-red-600"
+                  transactionType === 'expense' && "data-[state=active]:bg-red-100 data-[state=active]:text-red-600"
                 )}
               >
                 <MinusCircle className="h-4 w-4 mr-2" />
@@ -119,11 +125,21 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                 value="income"
                 className={cn(
                   "flex items-center justify-center",
-                  !isExpense && "data-[state=active]:bg-green-100 data-[state=active]:text-green-600"
+                  transactionType === 'income' && "data-[state=active]:bg-green-100 data-[state=active]:text-green-600"
                 )}
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Income
+              </TabsTrigger>
+              <TabsTrigger 
+                value="savings"
+                className={cn(
+                  "flex items-center justify-center",
+                  transactionType === 'savings' && "data-[state=active]:bg-blue-100 data-[state=active]:text-blue-600"
+                )}
+              >
+                <PiggyBank className="h-4 w-4 mr-2" />
+                Savings
               </TabsTrigger>
             </TabsList>
           </Tabs>
