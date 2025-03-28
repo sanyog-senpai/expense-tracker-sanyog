@@ -6,8 +6,9 @@ import { groupTransactionsByDate } from '@/utils/dateUtils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FilterX } from 'lucide-react';
+import { Search, FilterX, PiggyBank } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -20,7 +21,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
   onEditTransaction, 
   onDeleteTransaction 
 }) => {
-  const [filter, setFilter] = useState('all'); // 'all', 'expense', 'income'
+  const [filter, setFilter] = useState('all'); // 'all', 'expense', 'income', 'savings'
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   
@@ -28,6 +29,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
     // Filter by type
     if (filter === 'expense' && !transaction.isExpense) return false;
     if (filter === 'income' && transaction.isExpense) return false;
+    if (filter === 'savings' && !transaction.isSavings) return false;
     
     // Filter by category
     if (categoryFilter !== 'all' && transaction.category !== categoryFilter) return false;
@@ -83,7 +85,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             onValueChange={setFilter} 
             className="w-full"
           >
-            <TabsList className="grid grid-cols-3 bg-white/5 p-0.5">
+            <TabsList className="grid grid-cols-4 bg-white/5 p-0.5">
               <TabsTrigger 
                 value="all" 
                 className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
@@ -101,6 +103,13 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
               >
                 Income
+              </TabsTrigger>
+              <TabsTrigger 
+                value="savings"
+                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50"
+              >
+                <PiggyBank className="h-3.5 w-3.5 mr-1" />
+                Savings
               </TabsTrigger>
             </TabsList>
           </Tabs>
