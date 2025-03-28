@@ -41,6 +41,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
   const [category, setCategory] = useState<Category>('other');
   const [transactionType, setTransactionType] = useState<'expense' | 'income' | 'savings'>('expense');
   const [remarks, setRemarks] = useState('');
+  const [savingsPurpose, setSavingsPurpose] = useState('');
   const [error, setError] = useState('');
   
   // Reset form or fill with edit data when dialog opens
@@ -52,6 +53,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
         setCategory(editTransaction.category);
         if (editTransaction.isSavings) {
           setTransactionType('savings');
+          setSavingsPurpose(editTransaction.savingsPurpose || '');
         } else {
           setTransactionType(editTransaction.isExpense ? 'expense' : 'income');
         }
@@ -62,6 +64,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
         setCategory('other');
         setTransactionType('expense');
         setRemarks('');
+        setSavingsPurpose('');
       }
       setError('');
     }
@@ -79,6 +82,12 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
       return;
     }
     
+    // Validate savings purpose if it's a savings transaction
+    if (transactionType === 'savings' && !savingsPurpose.trim()) {
+      setError('Please enter a purpose for your savings');
+      return;
+    }
+    
     // Create transaction object
     const transaction: Omit<Transaction, 'id'> = {
       description: description.trim(),
@@ -87,6 +96,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
       date: new Date().toISOString(),
       isExpense: transactionType === 'expense',
       isSavings: transactionType === 'savings',
+      savingsPurpose: transactionType === 'savings' ? savingsPurpose.trim() : undefined,
       remarks: remarks.trim() || undefined
     };
     
@@ -166,6 +176,18 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
               step="0.01"
             />
           </div>
+          
+          {transactionType === 'savings' && (
+            <div className="space-y-2">
+              <Label htmlFor="savingsPurpose">Savings Purpose</Label>
+              <Input
+                id="savingsPurpose"
+                value={savingsPurpose}
+                onChange={(e) => setSavingsPurpose(e.target.value)}
+                placeholder="What are you saving for?"
+              />
+            </div>
+          )}
           
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>

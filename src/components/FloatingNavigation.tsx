@@ -33,11 +33,13 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = ({ onAddClick }) =
         
         <button
           onClick={onAddClick}
-          className="flex items-center justify-center py-2 px-4 transition-colors"
+          className="flex items-center justify-center py-1.5 px-4 transition-colors"
         >
           <div className="flex flex-col items-center">
-            <div className="h-10 w-10 rounded-full bg-neon-purple flex items-center justify-center">
-              <PlusCircle className="h-6 w-6 text-white" />
+            <div className="h-12 w-12 rounded-full bg-neon-purple flex items-center justify-center 
+                            shadow-[0_0_15px_rgba(162,105,255,0.7)] hover:shadow-[0_0_20px_rgba(162,105,255,0.9)] 
+                            transition-all duration-300 animate-pulse-subtle hover:scale-105">
+              <PlusCircle className="h-7 w-7 text-white" />
             </div>
           </div>
         </button>

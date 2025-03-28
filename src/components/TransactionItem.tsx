@@ -18,7 +18,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   onEditClick, 
   onDeleteClick 
 }) => {
-  const { id, amount, description, date, category, isExpense, isSavings, remarks } = transaction;
+  const { id, amount, description, date, category, isExpense, isSavings, savingsPurpose, remarks } = transaction;
   const navigate = useNavigate();
   
   const handleItemClick = () => {
@@ -74,6 +74,11 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                 </span>
               )}
             </div>
+            {isSavings && savingsPurpose && (
+              <p className="text-xs text-blue-300 mt-1">
+                Purpose: {savingsPurpose}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center">

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 
 // Types
@@ -19,7 +20,8 @@ export interface Transaction {
   date: string;
   category: Category;
   isExpense: boolean;
-  isSavings?: boolean; // New property for savings
+  isSavings?: boolean; // Property for savings
+  savingsPurpose?: string; // New property for savings purpose
   remarks?: string; // Optional remarks field
 }
 
@@ -150,6 +152,7 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
           category: 'other',
           isExpense: false,
           isSavings: true,
+          savingsPurpose: 'Emergency expenses',
           remarks: 'Monthly savings'
         }
       ];
