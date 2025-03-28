@@ -6,7 +6,7 @@ import { groupTransactionsByDate } from '@/utils/dateUtils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FilterX, PiggyBank } from 'lucide-react';
+import { Search, FilterX, PiggyBank, ArrowDown, ArrowUp } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
@@ -96,12 +96,14 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 value="expense"
                 className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
               >
+                <ArrowDown className="h-3.5 w-3.5 mr-1 text-red-400" />
                 Expense
               </TabsTrigger>
               <TabsTrigger 
                 value="income"
                 className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
               >
+                <ArrowUp className="h-3.5 w-3.5 mr-1 text-green-400" />
                 Income
               </TabsTrigger>
               <TabsTrigger 
