@@ -6,18 +6,29 @@ import { groupTransactionsByDate } from '@/utils/dateUtils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter } from 'lucide-react';
+import { Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
-import { fadeIn, staggerChildren } from '@/lib/animations';
+import { fadeIn, staggerChildren, slideUp } from '@/lib/animations';
 
 interface TransactionListProps {
   transactions: Transaction[];
   onEditTransaction: (transaction: Transaction) => void;
   onDeleteTransaction: (id: string) => void;
 }
+
+const MONTHS = [
+  'All', 'January', 'February', 'March', 'April', 'May', 'June', 
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const getCurrentYear = () => new Date().getFullYear();
+const getYearOptions = () => {
+  const currentYear = getCurrentYear();
+  return ['All', currentYear.toString(), (currentYear - 1).toString(), (currentYear - 2).toString()];
+};
 
 const TransactionList: React.FC<TransactionListProps> = ({ 
   transactions, 
@@ -27,6 +38,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
   const [filter, setFilter] = useState('all'); // 'all', 'expense', 'income', 'savings'
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [monthFilter, setMonthFilter] = useState('All');
+  const [yearFilter, setYearFilter] = useState('All');
   const isMobile = useIsMobile();
   
   const filteredTransactions = transactions.filter(transaction => {
@@ -37,6 +50,16 @@ const TransactionList: React.FC<TransactionListProps> = ({
     
     // Filter by category
     if (categoryFilter !== 'all' && transaction.category !== categoryFilter) return false;
+    
+    // Filter by month and year
+    if (monthFilter !== 'All' || yearFilter !== 'All') {
+      const transactionDate = new Date(transaction.date);
+      const transactionMonth = transactionDate.getMonth() + 1; // JavaScript months are 0-indexed
+      const transactionYear = transactionDate.getFullYear().toString();
+      
+      if (monthFilter !== 'All' && transactionMonth !== MONTHS.indexOf(monthFilter)) return false;
+      if (yearFilter !== 'All' && transactionYear !== yearFilter) return false;
+    }
     
     // Filter by search term
     if (searchTerm && !transaction.description.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -55,9 +78,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
     setFilter('all');
     setSearchTerm('');
     setCategoryFilter('all');
+    setMonthFilter('All');
+    setYearFilter('All');
   };
   
-  const hasActiveFilters = filter !== 'all' || searchTerm || categoryFilter !== 'all';
+  const hasActiveFilters = filter !== 'all' || searchTerm || categoryFilter !== 'all' || monthFilter !== 'All' || yearFilter !== 'All';
   
   if (transactions.length === 0) {
     return (
@@ -134,33 +159,88 @@ const TransactionList: React.FC<TransactionListProps> = ({
             </TabsList>
           </Tabs>
           
-          <div className="flex items-center space-x-2">
-            <Select 
-              value={categoryFilter} 
-              onValueChange={setCategoryFilter}
+          <div className="flex flex-wrap items-center gap-2">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="flex-1 min-w-[110px] md:min-w-0"
             >
-              <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 md:h-9 text-2xs md:text-xs w-[110px] md:w-[140px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent className="bg-purple-dark border-white/10">
-                <SelectItem value="all" className="text-white text-xs">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category} className="text-white text-xs">
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select 
+                value={categoryFilter} 
+                onValueChange={setCategoryFilter}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 md:h-9 text-2xs md:text-xs w-full">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="bg-purple-dark border-white/10">
+                  <SelectItem value="all" className="text-white text-xs">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category} className="text-white text-xs">
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="flex-1 min-w-[110px] md:min-w-0"
+            >
+              <Select
+                value={monthFilter}
+                onValueChange={setMonthFilter}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 md:h-9 text-2xs md:text-xs w-full">
+                  <div className="flex items-center">
+                    <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1.5 text-white/70" />
+                    <SelectValue placeholder="Month" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-purple-dark border-white/10">
+                  {MONTHS.map((month) => (
+                    <SelectItem key={month} value={month} className="text-white text-xs">
+                      {month}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="flex-1 min-w-[90px] md:min-w-0"
+            >
+              <Select
+                value={yearFilter}
+                onValueChange={setYearFilter}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 md:h-9 text-2xs md:text-xs w-full">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent className="bg-purple-dark border-white/10">
+                  {getYearOptions().map((year) => (
+                    <SelectItem key={year} value={year} className="text-white text-xs">
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </motion.div>
             
             {hasActiveFilters && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={clearFilters}
-                className="h-8 md:h-9 w-8 md:w-9 text-white/70 hover:text-white hover:bg-white/10"
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <FilterX className="h-4 w-4" />
-              </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={clearFilters}
+                  className="h-8 md:h-9 w-8 md:w-9 text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  <FilterX className="h-4 w-4" />
+                </Button>
+              </motion.div>
             )}
           </div>
         </div>
@@ -193,7 +273,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 {groupedTransactions[date].map((transaction, index) => (
                   <motion.div
                     key={transaction.id}
-                    variants={fadeIn}
+                    variants={slideUp}
                     transition={{ delay: index * 0.05 }}
                   >
                     <TransactionItem

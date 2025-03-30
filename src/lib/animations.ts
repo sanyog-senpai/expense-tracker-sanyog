@@ -142,3 +142,104 @@ export const floatingAnimation = {
     }
   }
 };
+
+// New animations for enhanced UI
+export const glowPulse = {
+  initial: { opacity: 0.7, boxShadow: "0 0 0 rgba(162, 105, 255, 0)" },
+  animate: {
+    opacity: 1, 
+    boxShadow: "0 0 15px rgba(162, 105, 255, 0.7)",
+    transition: { 
+      repeat: Infinity, 
+      repeatType: "reverse", 
+      duration: 2 
+    }
+  }
+};
+
+export const dropIn = {
+  initial: { 
+    y: -100, 
+    opacity: 0,
+    scale: 0.9
+  },
+  animate: { 
+    y: 0, 
+    opacity: 1,
+    scale: 1,
+    transition: { 
+      type: "spring", 
+      stiffness: 300, 
+      damping: 20 
+    }
+  },
+  exit: { 
+    y: 100, 
+    opacity: 0,
+    transition: { 
+      ease: "easeInOut", 
+      duration: 0.3 
+    }
+  }
+};
+
+export const rotateIn = {
+  initial: { 
+    rotate: -5, 
+    opacity: 0, 
+    scale: 0.9 
+  },
+  animate: { 
+    rotate: 0, 
+    opacity: 1, 
+    scale: 1,
+    transition: { 
+      type: "spring", 
+      stiffness: 200, 
+      damping: 15 
+    }
+  }
+};
+
+export const blurFadeIn = {
+  initial: { 
+    filter: "blur(10px)", 
+    opacity: 0 
+  },
+  animate: { 
+    filter: "blur(0px)", 
+    opacity: 1,
+    transition: { 
+      duration: 0.5 
+    }
+  }
+};
+
+export const expandIn = {
+  initial: { 
+    width: 0, 
+    opacity: 0 
+  },
+  animate: { 
+    width: "100%", 
+    opacity: 1,
+    transition: { 
+      duration: 0.3, 
+      ease: "easeOut" 
+    }
+  }
+};
+
+export const bounceIn = {
+  initial: { 
+    scale: 0 
+  },
+  animate: { 
+    scale: 1,
+    transition: { 
+      type: "spring", 
+      stiffness: 400, 
+      damping: 10 
+    }
+  }
+};

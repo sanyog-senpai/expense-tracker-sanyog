@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, PieChartIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { fadeIn } from '@/lib/animations';
+import { fadeIn, scaleIn } from '@/lib/animations';
 
 interface ExpenseChartProps {
   transactions: Transaction[];
@@ -52,7 +52,12 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         <div className="bg-purple-dark/95 border border-neon-purple/30 p-3 rounded-lg shadow-lg">
           <p className="text-white font-medium text-sm">{name}</p>
           <p className="text-white font-bold text-base">
-            NPR {value.toLocaleString('en-NP')}
+            {new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }).format(value)}
           </p>
         </div>
       );
@@ -79,7 +84,11 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
       <div className="flex justify-between items-center mb-1">
         <h3 className="text-sm md:text-base font-medium text-white">Financial Summary</h3>
         
-        <div className="flex items-center space-x-1 md:space-x-2">
+        <motion.div 
+          className="flex items-center space-x-1 md:space-x-2"
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        >
           <PieChartIcon className={`h-4 w-4 md:h-5 md:w-5 ${chartType === 'pie' ? 'text-neon-purple' : 'text-white/50'}`} />
           <Switch 
             checked={chartType === 'bar'} 
@@ -87,7 +96,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
             className="data-[state=checked]:bg-neon-purple h-4 md:h-5 w-7 md:w-9"
           />
           <BarChart3 className={`h-4 w-4 md:h-5 md:w-5 ${chartType === 'bar' ? 'text-neon-purple' : 'text-white/50'}`} />
-        </div>
+        </motion.div>
       </div>
       
       <Tabs 
@@ -122,6 +131,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
+        variants={scaleIn}
       >
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'pie' ? (
@@ -137,6 +147,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 dataKey="value"
                 strokeWidth={2}
                 stroke="rgba(255, 255, 255, 0.1)"
+                animationBegin={0}
+                animationDuration={1200}
+                animationEasing="ease-out"
               >
                 {chartData.map((entry, index) => (
                   <Cell 
@@ -164,12 +177,20 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
               <YAxis 
                 tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
                 axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-                tickFormatter={(value) => `NPR ${value / 1000}k`}
+                tickFormatter={(value) => {
+                  if (value >= 1000) {
+                    return `$${(value / 1000).toFixed(1)}k`;
+                  }
+                  return `$${value}`;
+                }}
               />
               <Tooltip content={renderTooltipContent} />
               <Bar 
                 dataKey="value" 
                 radius={[4, 4, 0, 0]}
+                animationBegin={0}
+                animationDuration={1200}
+                animationEasing="ease-out"
               >
                 {chartData.map((entry, index) => (
                   <Cell 
