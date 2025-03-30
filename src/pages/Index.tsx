@@ -8,6 +8,8 @@ import TransactionList from '@/components/TransactionList';
 import AddTransaction from '@/components/AddTransaction';
 import { TransactionProvider, useTransactions, Transaction } from '@/context/TransactionContext';
 import { useToast } from '@/components/ui/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fadeIn, pageTransition, staggeredContainer } from '@/lib/animations';
 
 const ExpenseTrackerApp = () => {
   const { state, addTransaction, deleteTransaction, updateTransaction } = useTransactions();
@@ -75,31 +77,81 @@ const ExpenseTrackerApp = () => {
     }
   };
   
+  const pageVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1] 
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -20,
+      transition: { 
+        duration: 0.3 
+      }
+    }
+  };
+  
   return (
     <Layout onAddClick={handleAddClick}>
-      <Header onAddClick={handleAddClick} />
-      
-      {activeTab === 'dashboard' ? (
-        <div className="mt-4 slide-up">
-          <Dashboard transactions={state.transactions} />
-          <div className="my-6">
-            <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
-            <TransactionList 
-              transactions={state.transactions.slice(0, 5)} 
-              onEditTransaction={handleEditTransaction}
-              onDeleteTransaction={handleDeleteTransaction}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="mt-4 slide-up">
-          <TransactionList 
-            transactions={state.transactions} 
-            onEditTransaction={handleEditTransaction}
-            onDeleteTransaction={handleDeleteTransaction}
-          />
-        </div>
-      )}
+      <motion.div
+        initial="initial"
+        animate="animate"
+        variants={staggeredContainer(0.1, 0.2)}
+      >
+        <motion.div variants={fadeIn}>
+          <Header onAddClick={handleAddClick} />
+        </motion.div>
+        
+        <AnimatePresence mode="wait">
+          {activeTab === 'dashboard' ? (
+            <motion.div 
+              key="dashboard"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="mt-4"
+            >
+              <Dashboard transactions={state.transactions} />
+              <div className="my-6">
+                <motion.h2 
+                  className="text-xl font-semibold mb-4"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Recent Transactions
+                </motion.h2>
+                <TransactionList 
+                  transactions={state.transactions.slice(0, 5)} 
+                  onEditTransaction={handleEditTransaction}
+                  onDeleteTransaction={handleDeleteTransaction}
+                />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="transactions"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="mt-4"
+            >
+              <TransactionList 
+                transactions={state.transactions} 
+                onEditTransaction={handleEditTransaction}
+                onDeleteTransaction={handleDeleteTransaction}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       
       <AddTransaction 
         isOpen={isAddModalOpen}

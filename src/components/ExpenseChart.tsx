@@ -5,6 +5,8 @@ import { Transaction } from '@/context/TransactionContext';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, PieChartIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { fadeIn } from '@/lib/animations';
 
 interface ExpenseChartProps {
   transactions: Transaction[];
@@ -67,7 +69,13 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   }
   
   return (
-    <div className="space-y-4 fade-in">
+    <motion.div 
+      className="space-y-4"
+      variants={fadeIn}
+      initial="initial"
+      animate="animate"
+      transition={{ duration: 0.3 }}
+    >
       <div className="flex justify-between items-center mb-1">
         <h3 className="text-sm md:text-base font-medium text-white">Financial Summary</h3>
         
@@ -109,7 +117,12 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         </TabsList>
       </Tabs>
       
-      <div className="w-full h-[250px]">
+      <motion.div 
+        className="w-full h-[250px]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'pie' ? (
             <PieChart>
@@ -169,8 +182,8 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
             </BarChart>
           )}
         </ResponsiveContainer>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

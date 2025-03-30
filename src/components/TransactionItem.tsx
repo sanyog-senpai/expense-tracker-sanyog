@@ -7,6 +7,7 @@ import { Pencil, Trash2, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { motion } from 'framer-motion';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -57,20 +58,28 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   };
   
   return (
-    <div 
+    <motion.div 
       className="group relative flex flex-col p-3 md:p-4 rounded-xl glass-card neon-border glass-hover transition-all duration-300 cursor-pointer"
       onClick={handleItemClick}
+      whileHover={{ scale: 1.02, boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)" }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      layout
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2 md:space-x-4">
-          <div className={cn(
-            "flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full transition-all duration-300",
-            getTransactionColor()
-          )}>
+          <motion.div 
+            className={cn(
+              "flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full transition-all duration-300",
+              getTransactionColor()
+            )}
+            whileHover={{ scale: 1.1 }}
+          >
             <span className="text-base md:text-lg">
               {isSavings ? <PiggyBank className="h-4 w-4 md:h-5 md:w-5" /> : getCategoryIcon(category)}
             </span>
-          </div>
+          </motion.div>
           <div>
             <h3 className="text-xs md:text-sm font-medium text-white">{getDescription()}</h3>
             <div className="flex items-center space-x-1.5 md:space-x-2 mt-0.5 md:mt-1">
@@ -92,26 +101,35 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
           </div>
         </div>
         <div className="flex items-center">
-          <span className={cn(
-            "text-xs md:text-sm font-medium",
-            getAmountColor()
-          )}>
+          <motion.span 
+            className={cn(
+              "text-xs md:text-sm font-medium",
+              getAmountColor()
+            )}
+            whileHover={{ scale: 1.05 }}
+          >
             {isExpense ? '-' : '+'}{formatCurrency(amount)}
-          </span>
-          <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex space-x-1 transition-opacity duration-200">
-            <button 
+          </motion.span>
+          <motion.div 
+            className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex space-x-1 transition-opacity duration-200"
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+          >
+            <motion.button 
               onClick={handleEditClick}
               className="p-1 hover:bg-white/10 rounded transition-colors"
+              whileHover={{ scale: 1.1 }}
             >
               <Pencil className="h-3.5 w-3.5 md:h-4 md:w-4 text-white/70" />
-            </button>
-            <button 
+            </motion.button>
+            <motion.button 
               onClick={handleDeleteClick}
               className="p-1 hover:bg-white/10 rounded transition-colors"
+              whileHover={{ scale: 1.1 }}
             >
               <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-400" />
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
       </div>
       
@@ -122,7 +140,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
           </p>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

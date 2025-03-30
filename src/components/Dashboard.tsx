@@ -7,6 +7,8 @@ import { ArrowDown, ArrowUp, Wallet, CreditCard } from 'lucide-react';
 import AnimatedNumber from './AnimatedNumber';
 import ExpenseChart from './ExpenseChart';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { motion } from 'framer-motion';
+import { fadeIn, slideUp } from '@/lib/animations';
 
 interface DashboardProps {
   transactions: Transaction[];
@@ -29,9 +31,19 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
   }, [transactions]);
   
   return (
-    <div className="space-y-5 mb-6">
+    <motion.div 
+      className="space-y-5 mb-6"
+      initial={fadeIn.initial}
+      animate={fadeIn.animate}
+      transition={{ duration: 0.4, staggerChildren: 0.1 }}
+    >
       {/* Balance Card - Credit Card Style */}
-      <div className="card-3d">
+      <motion.div 
+        className="card-3d"
+        initial={slideUp.initial}
+        animate={slideUp.animate}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <div className="card-inner-3d">
           <Card className="glass-card neon-border overflow-hidden relative h-44 md:h-48">
             <div className="absolute top-0 left-0 w-full h-full">
@@ -88,20 +100,31 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </motion.div>
       
       {/* Chart Section */}
-      <Card className="glass-card neon-border">
-        <CardContent className="p-3 md:p-4">
-          <ExpenseChart transactions={transactions} />
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={slideUp.initial}
+        animate={slideUp.animate}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <Card className="glass-card neon-border">
+          <CardContent className="p-3 md:p-4">
+            <ExpenseChart transactions={transactions} />
+          </CardContent>
+        </Card>
+      </motion.div>
       
       {/* Recent Transactions Section */}
-      <div className="space-y-2">
+      <motion.div 
+        className="space-y-2"
+        initial={slideUp.initial}
+        animate={slideUp.animate}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
         <h2 className="text-sm md:text-base font-medium text-white px-1">Recent Transactions</h2>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
