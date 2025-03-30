@@ -92,9 +92,6 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
       
       {/* Chart Section */}
       <Card className="glass-card neon-border">
-        <CardHeader className="p-3 md:p-4 pb-1 md:pb-2">
-          <CardTitle className="text-sm md:text-base font-medium text-white">Financial Summary</CardTitle>
-        </CardHeader>
         <CardContent className="p-3 md:p-4">
           <ExpenseChart transactions={transactions} />
         </CardContent>

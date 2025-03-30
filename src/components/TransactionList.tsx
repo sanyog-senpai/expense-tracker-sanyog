@@ -87,33 +87,33 @@ const TransactionList: React.FC<TransactionListProps> = ({
             onValueChange={setFilter} 
             className="w-full"
           >
-            <TabsList className={`grid grid-cols-4 bg-white/5 p-0.5 ${isMobile ? 'text-2xs' : 'text-xs'}`}>
+            <TabsList className="grid grid-cols-4 bg-white/5 p-0.5 w-full">
               <TabsTrigger 
                 value="all" 
-                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50 py-1.5"
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50 py-1 md:py-1.5 text-2xs md:text-xs h-8"
               >
-                <ListFilter className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'}`} />
+                <ListFilter className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
                 {!isMobile && "All"}
               </TabsTrigger>
               <TabsTrigger 
                 value="expense"
-                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50 py-1.5"
+                className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 data-[state=inactive]:text-white/50 py-1 md:py-1.5 text-2xs md:text-xs h-8"
               >
-                <ArrowDown className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'} text-red-400`} />
+                <ArrowDown className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 text-red-400" />
                 {isMobile ? 'Exp' : 'Expense'}
               </TabsTrigger>
               <TabsTrigger 
                 value="income"
-                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50 py-1.5"
+                className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400 data-[state=inactive]:text-white/50 py-1 md:py-1.5 text-2xs md:text-xs h-8"
               >
-                <ArrowUp className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'} text-green-400`} />
+                <ArrowUp className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 text-green-400" />
                 {isMobile ? 'Inc' : 'Income'}
               </TabsTrigger>
               <TabsTrigger 
                 value="savings"
-                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50 py-1.5"
+                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50 py-1 md:py-1.5 text-2xs md:text-xs h-8"
               >
-                <PiggyBank className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'}`} />
+                <PiggyBank className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
                 {isMobile ? 'Sav' : 'Savings'}
               </TabsTrigger>
             </TabsList>
@@ -124,7 +124,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
               value={categoryFilter} 
               onValueChange={setCategoryFilter}
             >
-              <SelectTrigger className={`${isMobile ? 'w-[120px] text-2xs h-9' : 'w-[140px] text-xs'} bg-white/5 border-white/10 text-white`}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 text-2xs md:text-xs w-[110px] md:w-[140px]">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent className="bg-purple-dark border-white/10">
@@ -142,7 +142,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 variant="ghost" 
                 size="icon" 
                 onClick={clearFilters}
-                className="h-9 w-9 text-white/70 hover:text-white hover:bg-white/10"
+                className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
               >
                 <FilterX className="h-4 w-4" />
               </Button>

@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import { Transaction } from '@/context/TransactionContext';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CharsSquare, BarChart3, PieChartIcon } from 'lucide-react';
+import { BarChart3, PieChartIcon } from 'lucide-react';
 
 interface ExpenseChartProps {
   transactions: Transaction[];
@@ -68,44 +68,46 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   
   return (
     <div className="space-y-4 fade-in">
-      <div className="flex justify-between items-center">
-        <Tabs 
-          value={dataType} 
-          onValueChange={(value) => setDataType(value as any)}
-          className="w-auto"
-        >
-          <TabsList className="bg-white/5 p-0.5">
-            <TabsTrigger 
-              value="expenses" 
-              className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 data-[state=inactive]:text-white/50"
-            >
-              Expenses
-            </TabsTrigger>
-            <TabsTrigger 
-              value="income"
-              className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400 data-[state=inactive]:text-white/50"
-            >
-              Income
-            </TabsTrigger>
-            <TabsTrigger 
-              value="savings"
-              className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50"
-            >
-              Savings
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="flex justify-between items-center mb-1">
+        <h3 className="text-sm md:text-base font-medium text-white">Financial Summary</h3>
         
-        <div className="flex items-center space-x-2">
-          <PieChartIcon className={`h-5 w-5 ${chartType === 'pie' ? 'text-neon-purple' : 'text-white/50'}`} />
+        <div className="flex items-center space-x-1 md:space-x-2">
+          <PieChartIcon className={`h-4 w-4 md:h-5 md:w-5 ${chartType === 'pie' ? 'text-neon-purple' : 'text-white/50'}`} />
           <Switch 
             checked={chartType === 'bar'} 
             onCheckedChange={(checked) => setChartType(checked ? 'bar' : 'pie')}
-            className="data-[state=checked]:bg-neon-purple"
+            className="data-[state=checked]:bg-neon-purple h-4 md:h-5 w-7 md:w-9"
           />
-          <BarChart3 className={`h-5 w-5 ${chartType === 'bar' ? 'text-neon-purple' : 'text-white/50'}`} />
+          <BarChart3 className={`h-4 w-4 md:h-5 md:w-5 ${chartType === 'bar' ? 'text-neon-purple' : 'text-white/50'}`} />
         </div>
       </div>
+      
+      <Tabs 
+        value={dataType} 
+        onValueChange={(value) => setDataType(value as any)}
+        className="w-full"
+      >
+        <TabsList className="bg-white/5 p-0.5 w-full grid grid-cols-3">
+          <TabsTrigger 
+            value="expenses" 
+            className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
+          >
+            Expenses
+          </TabsTrigger>
+          <TabsTrigger 
+            value="income"
+            className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
+          >
+            Income
+          </TabsTrigger>
+          <TabsTrigger 
+            value="savings"
+            className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
+          >
+            Savings
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
       
       <div className="w-full h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -133,7 +135,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
               </Pie>
               <Tooltip content={renderTooltipContent} />
               <Legend 
-                formatter={(value: string) => <span className="text-white/90 text-sm">{value}</span>}
+                formatter={(value: string) => <span className="text-white/90 text-xs md:text-sm">{value}</span>}
                 iconType="circle"
                 iconSize={10}
               />
