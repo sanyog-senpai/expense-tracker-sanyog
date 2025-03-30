@@ -6,9 +6,10 @@ import { groupTransactionsByDate } from '@/utils/dateUtils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FilterX, PiggyBank, ArrowDown, ArrowUp } from 'lucide-react';
+import { Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -24,6 +25,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
   const [filter, setFilter] = useState('all'); // 'all', 'expense', 'income', 'savings'
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const isMobile = useIsMobile();
   
   const filteredTransactions = transactions.filter(transaction => {
     // Filter by type
@@ -79,70 +81,73 @@ const TransactionList: React.FC<TransactionListProps> = ({
           />
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-3">
           <Tabs 
             value={filter} 
             onValueChange={setFilter} 
             className="w-full"
           >
-            <TabsList className="grid grid-cols-4 bg-white/5 p-0.5">
+            <TabsList className={`grid grid-cols-4 bg-white/5 p-0.5 ${isMobile ? 'text-2xs' : 'text-xs'}`}>
               <TabsTrigger 
                 value="all" 
-                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50 py-1.5"
               >
-                All
+                <ListFilter className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'}`} />
+                {!isMobile && "All"}
               </TabsTrigger>
               <TabsTrigger 
                 value="expense"
-                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50 py-1.5"
               >
-                <ArrowDown className="h-3.5 w-3.5 mr-1 text-red-400" />
-                Expense
+                <ArrowDown className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'} text-red-400`} />
+                {isMobile ? 'Exp' : 'Expense'}
               </TabsTrigger>
               <TabsTrigger 
                 value="income"
-                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50"
+                className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-white data-[state=inactive]:text-white/50 py-1.5"
               >
-                <ArrowUp className="h-3.5 w-3.5 mr-1 text-green-400" />
-                Income
+                <ArrowUp className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'} text-green-400`} />
+                {isMobile ? 'Inc' : 'Income'}
               </TabsTrigger>
               <TabsTrigger 
                 value="savings"
-                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50"
+                className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50 py-1.5"
               >
-                <PiggyBank className="h-3.5 w-3.5 mr-1" />
-                Savings
+                <PiggyBank className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-3.5 w-3.5 mr-1'}`} />
+                {isMobile ? 'Sav' : 'Savings'}
               </TabsTrigger>
             </TabsList>
           </Tabs>
           
-          <Select 
-            value={categoryFilter} 
-            onValueChange={setCategoryFilter}
-          >
-            <SelectTrigger className="w-[140px] bg-white/5 border-white/10 text-white">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent className="bg-purple-dark border-white/10">
-              <SelectItem value="all" className="text-white">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category} className="text-white">
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {hasActiveFilters && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={clearFilters}
-              className="h-9 w-9 text-white/70 hover:text-white hover:bg-white/10"
+          <div className="flex items-center space-x-2">
+            <Select 
+              value={categoryFilter} 
+              onValueChange={setCategoryFilter}
             >
-              <FilterX className="h-4 w-4" />
-            </Button>
-          )}
+              <SelectTrigger className={`${isMobile ? 'w-[120px] text-2xs h-9' : 'w-[140px] text-xs'} bg-white/5 border-white/10 text-white`}>
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent className="bg-purple-dark border-white/10">
+                <SelectItem value="all" className="text-white text-xs">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category} className="text-white text-xs">
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {hasActiveFilters && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={clearFilters}
+                className="h-9 w-9 text-white/70 hover:text-white hover:bg-white/10"
+              >
+                <FilterX className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
       
@@ -151,10 +156,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
           <p className="text-white/70 text-sm">No transactions match your filters</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {groupDates.map((date) => (
             <div key={date} className="space-y-2">
-              <h3 className="text-sm font-medium text-white/70 px-1">{date}</h3>
+              <h3 className="text-2xs md:text-sm font-medium text-white/70 px-1">{date}</h3>
               <div className="space-y-2">
                 {groupedTransactions[date].map((transaction) => (
                   <TransactionItem

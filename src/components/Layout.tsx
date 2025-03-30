@@ -2,6 +2,7 @@
 import React, { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import FloatingNavigation from './FloatingNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutProps {
   children: ReactNode;
@@ -16,6 +17,8 @@ const Layout: React.FC<LayoutProps> = ({
   hideNavigation = false,
   onAddClick
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-dark via-background to-background overflow-hidden relative">
       {/* Background decorative elements */}
@@ -29,7 +32,7 @@ const Layout: React.FC<LayoutProps> = ({
       <div className="relative z-10">
         <div 
           className={cn(
-            "container max-w-2xl mx-auto px-4 py-6 space-y-6 pb-24", // Added padding bottom to make space for the navigation
+            "container max-w-2xl mx-auto px-3 md:px-4 py-4 md:py-6 space-y-4 md:space-y-6 pb-24", // Adjusted padding for mobile
             className
           )}
         >

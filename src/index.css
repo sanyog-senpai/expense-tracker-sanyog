@@ -80,6 +80,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
+  /* Typography */
+  .text-2xs {
+    font-size: 0.65rem;
+    line-height: 1rem;
+  }
+  
   /* Animations */
   .fade-in {
     animation: fadeIn 0.5s ease-out forwards;

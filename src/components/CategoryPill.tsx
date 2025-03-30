@@ -2,6 +2,7 @@
 import React from 'react';
 import { getCategoryColor } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CategoryPillProps {
   category: string;
@@ -10,6 +11,7 @@ interface CategoryPillProps {
 
 const CategoryPill: React.FC<CategoryPillProps> = ({ category, className }) => {
   const colorClass = getCategoryColor(category);
+  const isMobile = useIsMobile();
   
   // Map category colors to our futuristic neon colors
   const getNeoBgColor = (colorClass: string) => {
@@ -24,16 +26,25 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, className }) => {
   
   const neoBgColor = getNeoBgColor(colorClass);
   
+  // For very long category names, truncate them on mobile
+  const displayText = () => {
+    const capitalized = category.charAt(0).toUpperCase() + category.slice(1);
+    if (isMobile && capitalized.length > 10) {
+      return capitalized.slice(0, 8) + '..';
+    }
+    return capitalized;
+  };
+  
   return (
     <div 
       className={cn(
         neoBgColor,
-        'text-xs font-medium py-1 px-2.5 rounded-full neon-border',
-        'backdrop-blur-sm',
+        'text-2xs md:text-xs font-medium py-0.5 md:py-1 px-1.5 md:px-2.5 rounded-full neon-border',
+        'backdrop-blur-sm whitespace-nowrap',
         className
       )}
     >
-      {category.charAt(0).toUpperCase() + category.slice(1)}
+      {displayText()}
     </div>
   );
 };

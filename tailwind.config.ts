@@ -19,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			fontSize: {
+				'2xs': '0.65rem', // Add the extra small text size
+			},
 			fontFamily: {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
 			},
@@ -115,6 +118,9 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'float': 'float 3s ease-in-out infinite',
 				'glow': 'glow 2s ease-in-out infinite'
+			},
+			spacing: {
+				'1.5': '0.375rem', // For extra-tight spacing on mobile
 			}
 		}
 	},
