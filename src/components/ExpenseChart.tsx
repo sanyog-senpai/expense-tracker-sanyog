@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { Transaction } from '@/context/TransactionContext';
@@ -182,7 +181,8 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
     );
   }
   
-  const showComparisonSelector = dataType !== '' && chartType === 'bar';
+  // Fix: removed comparison with empty string that was causing the TypeScript error
+  const showComparisonSelector = chartType === 'bar';
   
   return (
     <motion.div 
