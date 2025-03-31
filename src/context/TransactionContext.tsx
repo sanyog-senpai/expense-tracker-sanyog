@@ -43,12 +43,14 @@ const initialState: TransactionState = {
 };
 
 // Create context
-const TransactionContext = createContext<{
+interface TransactionContextType {
   state: TransactionState;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   deleteTransaction: (id: string) => void;
   updateTransaction: (transaction: Transaction) => void;
-} | undefined>(undefined);
+}
+
+const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 // Persist data to localStorage
 const persistData = (data: Transaction[]) => {
