@@ -6,12 +6,21 @@ import { groupTransactionsByDate } from '@/utils/dateUtils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter, Calendar } from 'lucide-react';
+import { 
+  Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter, 
+  Calendar, Download, FileDown, FileSpreadsheet 
+} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerChildren, slideUp } from '@/lib/animations';
+import { exportTransactionsToExcel } from '@/utils/exportUtils';
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -84,6 +93,24 @@ const TransactionList: React.FC<TransactionListProps> = ({
   
   const hasActiveFilters = filter !== 'all' || searchTerm || categoryFilter !== 'all' || monthFilter !== 'All' || yearFilter !== 'All';
   
+  const handleExportToExcel = () => {
+    let periodName = 'All Transactions';
+    
+    if (monthFilter !== 'All' && yearFilter !== 'All') {
+      periodName = `${monthFilter} ${yearFilter}`;
+    } else if (monthFilter !== 'All') {
+      periodName = monthFilter;
+    } else if (yearFilter !== 'All') {
+      periodName = yearFilter;
+    }
+    
+    if (filter !== 'all') {
+      periodName += ` - ${filter.charAt(0).toUpperCase() + filter.slice(1)}`;
+    }
+    
+    exportTransactionsToExcel(filteredTransactions, periodName);
+  };
+  
   if (transactions.length === 0) {
     return (
       <motion.div 
@@ -119,6 +146,51 @@ const TransactionList: React.FC<TransactionListProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 bg-white/5 border-white/10 focus:border-neon-purple/50 text-white placeholder:text-white/30"
           />
+        </div>
+        
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-sm md:text-base font-medium text-white">Filter Transactions</h3>
+          
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center"
+          >
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white space-x-1"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-1" />
+                  <span className="hidden md:inline">Export</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 bg-purple-dark border-white/10 p-3">
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-white">Export Options</h4>
+                  <p className="text-xs text-white/70">Generate an Excel file with current filtered transactions</p>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button 
+                      onClick={handleExportToExcel}
+                      className="w-full mt-2 bg-green-500/80 hover:bg-green-500 text-white"
+                      size="sm"
+                    >
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                      Export to Excel
+                    </Button>
+                  </motion.div>
+                  <p className="text-2xs text-white/40 mt-1">
+                    {filteredTransactions.length} transaction(s) will be exported
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </motion.div>
         </div>
         
         <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-3">

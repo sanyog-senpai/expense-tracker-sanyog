@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, PieChartIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, scaleIn } from '@/lib/animations';
+import { formatCurrency } from '@/utils/dateUtils';
 
 interface ExpenseChartProps {
   transactions: Transaction[];
@@ -52,12 +53,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         <div className="bg-purple-dark/95 border border-neon-purple/30 p-3 rounded-lg shadow-lg">
           <p className="text-white font-medium text-sm">{name}</p>
           <p className="text-white font-bold text-base">
-            {new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD',
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }).format(value)}
+            {formatCurrency(value)}
           </p>
         </div>
       );
@@ -85,7 +81,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         <h3 className="text-sm md:text-base font-medium text-white">Financial Summary</h3>
         
         <motion.div 
-          className="flex items-center space-x-1 md:space-x-2"
+          className="flex items-center space-x-1 md:space-x-2 bg-white/5 rounded-full px-2 py-1 border border-white/10"
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
@@ -93,7 +89,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
           <Switch 
             checked={chartType === 'bar'} 
             onCheckedChange={(checked) => setChartType(checked ? 'bar' : 'pie')}
-            className="data-[state=checked]:bg-neon-purple h-4 md:h-5 w-7 md:w-9"
+            className="data-[state=checked]:bg-neon-purple"
           />
           <BarChart3 className={`h-4 w-4 md:h-5 md:w-5 ${chartType === 'bar' ? 'text-neon-purple' : 'text-white/50'}`} />
         </motion.div>
@@ -179,10 +175,11 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
                 tickFormatter={(value) => {
                   if (value >= 1000) {
-                    return `$${(value / 1000).toFixed(1)}k`;
+                    return `₹${(value / 1000).toFixed(1)}k`;
                   }
-                  return `$${value}`;
+                  return `₹${value}`;
                 }}
+                domain={[0, 'dataMax + 500']}
               />
               <Tooltip content={renderTooltipContent} />
               <Bar 

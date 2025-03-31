@@ -1,346 +1,290 @@
-
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Transaction, Category } from '@/context/TransactionContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlusCircle, MinusCircle, PiggyBank, Calendar, Tag, DollarSign, FileText, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Textarea } from '@/components/ui/textarea';
-import { motion, AnimatePresence } from 'framer-motion';
-import { fadeIn, slideUp, scaleIn } from '@/lib/animations';
+import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { X, ArrowDown, ArrowUp } from 'lucide-react';
+import { Category, Transaction } from '@/context/TransactionContext';
+import { motion } from 'framer-motion';
 
 interface AddTransactionProps {
   isOpen: boolean;
-  onClose: () => void;
-  onSave: (transaction: Omit<Transaction, 'id'>) => void;
-  editTransaction?: Transaction;
+  setIsOpen: (open: boolean) => void;
+  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  onUpdateTransaction: (transaction: Transaction) => void;
+  transaction?: Transaction;
 }
-
-const CATEGORIES: Category[] = [
-  'food',
-  'transportation',
-  'entertainment',
-  'shopping',
-  'utilities',
-  'health',
-  'education',
-  'travel',
-  'other'
-];
 
 const AddTransaction: React.FC<AddTransactionProps> = ({ 
   isOpen, 
-  onClose, 
-  onSave,
-  editTransaction 
+  setIsOpen, 
+  onAddTransaction, 
+  onUpdateTransaction, 
+  transaction 
 }) => {
   const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<Category>('other');
-  const [transactionType, setTransactionType] = useState<'expense' | 'income' | 'savings'>('expense');
-  const [remarks, setRemarks] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [category, setCategory] = useState<Category>('food');
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 16));
+  const [isExpense, setIsExpense] = useState(true);
+  const [isSavings, setIsSavings] = useState(false);
   const [savingsPurpose, setSavingsPurpose] = useState('');
-  const [error, setError] = useState('');
+  const [remarks, setRemarks] = useState('');
   
-  // Reset form or fill with edit data when dialog opens
   useEffect(() => {
-    if (isOpen) {
-      if (editTransaction) {
-        setDescription(editTransaction.description);
-        setAmount(editTransaction.amount.toString());
-        setCategory(editTransaction.category);
-        if (editTransaction.isSavings) {
-          setTransactionType('savings');
-          setSavingsPurpose(editTransaction.savingsPurpose || '');
-        } else {
-          setTransactionType(editTransaction.isExpense ? 'expense' : 'income');
-        }
-        setRemarks(editTransaction.remarks || '');
-      } else {
-        setDescription('');
-        setAmount('');
-        setCategory('other');
-        setTransactionType('expense');
-        setRemarks('');
-        setSavingsPurpose('');
-      }
-      setError('');
+    if (transaction) {
+      setDescription(transaction.description);
+      setAmount(transaction.amount);
+      setCategory(transaction.category);
+      setDate(transaction.date.slice(0, 16));
+      setIsExpense(transaction.isExpense);
+      setIsSavings(transaction.isSavings || false);
+      setSavingsPurpose(transaction.savingsPurpose || '');
+      setRemarks(transaction.remarks || '');
+    } else {
+      setDescription('');
+      setAmount(0);
+      setCategory('food');
+      setDate(new Date().toISOString().slice(0, 16));
+      setIsExpense(true);
+      setIsSavings(false);
+      setSavingsPurpose('');
+      setRemarks('');
     }
-  }, [isOpen, editTransaction]);
+  }, [transaction]);
   
-  const handleSave = () => {
-    // Validate inputs
-    if (!description.trim()) {
-      setError('Description is required');
-      return;
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      setError('Please enter a valid amount');
-      return;
-    }
-    
-    // Validate savings purpose if it's a savings transaction
-    if (transactionType === 'savings' && !savingsPurpose.trim()) {
-      setError('Please enter a purpose for your savings');
-      return;
-    }
-    
-    // Create transaction object
-    const transaction: Omit<Transaction, 'id'> = {
-      description: description.trim(),
-      amount: Number(amount),
+    const transactionData: Omit<Transaction, 'id'> = {
+      amount,
+      description,
+      date,
       category,
-      date: new Date().toISOString(),
-      isExpense: transactionType === 'expense',
-      isSavings: transactionType === 'savings',
-      savingsPurpose: transactionType === 'savings' ? savingsPurpose.trim() : undefined,
-      remarks: remarks.trim() || undefined
+      isExpense,
+      isSavings,
+      savingsPurpose,
+      remarks
     };
     
-    onSave(transaction);
-    onClose();
+    if (transaction) {
+      onUpdateTransaction({ ...transaction, ...transactionData });
+    } else {
+      onAddTransaction(transactionData);
+    }
+    
+    setIsOpen(false);
   };
-  
-  const getTabColor = (type: 'expense' | 'income' | 'savings') => {
-    if (type === 'expense') return "data-[state=active]:bg-red-100/10 data-[state=active]:text-red-400";
-    if (type === 'income') return "data-[state=active]:bg-green-100/10 data-[state=active]:text-green-400";
-    return "data-[state=active]:bg-blue-100/10 data-[state=active]:text-blue-400";
-  };
-  
-  return (
-    <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-[425px] bg-purple-dark/95 border-neon-purple/30 text-white">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
+
+// Styling changes
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent className="bg-purple-dark border-white/10 p-0 max-w-lg mx-auto">
+    <div className="relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-neon-purple/10 rounded-full filter blur-3xl opacity-20"></div>
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-neon-blue/10 rounded-full filter blur-3xl opacity-20"></div>
+      
+      {/* Content */}
+      <div className="p-5 md:p-6 relative z-10">
+        <div className="flex items-center justify-between mb-5">
+          <DialogTitle className="text-xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+            {transaction ? "Edit Transaction" : "Add Transaction"}
+          </DialogTitle>
+          
+          <DialogClose className="w-7 h-7 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors">
+            <X className="h-4 w-4 text-white/70" />
+          </DialogClose>
+        </div>
+        
+        <motion.form 
+          onSubmit={handleSubmit}
+          className="space-y-4 md:space-y-5"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <DialogHeader>
-            <DialogTitle className="text-white text-xl">
-              {editTransaction ? 'Edit Transaction' : 'Add Transaction'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="py-4 space-y-5">
-            <motion.div variants={fadeIn}>
-              <Tabs 
-                defaultValue={transactionType} 
-                className="w-full" 
-                value={transactionType}
-                onValueChange={(val: 'expense' | 'income' | 'savings') => setTransactionType(val)}
-              >
-                <TabsList className="grid w-full grid-cols-3 bg-black/20 p-1">
-                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                    <TabsTrigger 
-                      value="expense" 
-                      className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-md",
-                        getTabColor('expense')
-                      )}
-                    >
-                      <MinusCircle className="h-4 w-4" />
-                      <span>Expense</span>
-                    </TabsTrigger>
-                  </motion.div>
-                  
-                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                    <TabsTrigger 
-                      value="income"
-                      className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-md",
-                        getTabColor('income')
-                      )}
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      <span>Income</span>
-                    </TabsTrigger>
-                  </motion.div>
-                  
-                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                    <TabsTrigger 
-                      value="savings"
-                      className={cn(
-                        "flex items-center justify-center gap-1.5 rounded-md",
-                        getTabColor('savings')
-                      )}
-                    >
-                      <PiggyBank className="h-4 w-4" />
-                      <span>Savings</span>
-                    </TabsTrigger>
-                  </motion.div>
-                </TabsList>
-              </Tabs>
-            </motion.div>
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="col-span-2">
+              <Label htmlFor="description" className="text-white/70 mb-1.5 block text-xs">Description</Label>
+              <Input
+                id="description"
+                placeholder="Enter description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
+                required
+              />
+            </div>
             
-            <div className="grid gap-4">
-              <motion.div 
-                className="space-y-2"
-                variants={fadeIn}
-                custom={1}
-                initial="initial"
-                animate="animate"
-              >
-                <Label htmlFor="description" className="text-white/80 flex items-center gap-2">
-                  <FileText className="h-3.5 w-3.5 text-white/60" />
-                  Description
-                </Label>
-                <Input
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="What was this transaction for?"
-                  className="bg-white/5 border-white/10 focus-visible:ring-neon-purple/30 text-white placeholder:text-white/30"
-                />
-              </motion.div>
-              
-              <motion.div 
-                className="space-y-2"
-                variants={fadeIn}
-                custom={2}
-                initial="initial"
-                animate="animate"
-              >
-                <Label htmlFor="amount" className="text-white/80 flex items-center gap-2">
-                  <DollarSign className="h-3.5 w-3.5 text-white/60" />
-                  Amount
-                </Label>
+            <div>
+              <Label htmlFor="amount" className="text-white/70 mb-1.5 block text-xs">Amount</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">₹</span>
                 <Input
                   id="amount"
                   type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  min="0.01"
-                  step="0.01"
-                  className="bg-white/5 border-white/10 focus-visible:ring-neon-purple/30 text-white placeholder:text-white/30"
+                  value={amount}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white pl-8 h-10"
+                  required
                 />
-              </motion.div>
-              
-              <AnimatePresence>
-                {transactionType === 'savings' && (
-                  <motion.div 
-                    className="space-y-2"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Label htmlFor="savingsPurpose" className="text-white/80 flex items-center gap-2">
-                      <PiggyBank className="h-3.5 w-3.5 text-white/60" />
-                      Savings Purpose
-                    </Label>
-                    <Input
-                      id="savingsPurpose"
-                      value={savingsPurpose}
-                      onChange={(e) => setSavingsPurpose(e.target.value)}
-                      placeholder="What are you saving for?"
-                      className="bg-white/5 border-white/10 focus-visible:ring-neon-purple/30 text-white placeholder:text-white/30"
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              <motion.div 
-                className="space-y-2"
-                variants={fadeIn}
-                custom={3}
-                initial="initial"
-                animate="animate"
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="category" className="text-white/70 mb-1.5 block text-xs">Category</Label>
+              <Select
+                value={category}
+                onValueChange={(value) => setCategory(value as any)}
               >
-                <Label htmlFor="category" className="text-white/80 flex items-center gap-2">
-                  <Tag className="h-3.5 w-3.5 text-white/60" />
-                  Category
-                </Label>
-                <Select 
-                  value={category} 
-                  onValueChange={(value: Category) => setCategory(value)}
+                <SelectTrigger 
+                  id="category"
+                  className="bg-white/5 border-white/10 text-white h-10 focus:ring-neon-purple/20 focus:ring-offset-0"
                 >
-                  <SelectTrigger 
-                    id="category"
-                    className="bg-white/5 border-white/10 focus:ring-neon-purple/30 text-white"
-                  >
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-purple-dark border-white/10">
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat} className="text-white focus:bg-white/10 focus:text-white">
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </motion.div>
-              
-              <motion.div 
-                className="space-y-2"
-                variants={fadeIn}
-                custom={4}
-                initial="initial"
-                animate="animate"
-              >
-                <Label htmlFor="remarks" className="text-white/80 flex items-center gap-2">
-                  <FileText className="h-3.5 w-3.5 text-white/60" />
-                  Remarks (optional)
-                </Label>
-                <Textarea
-                  id="remarks"
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Any additional notes about this transaction..."
-                  className="resize-none h-16 bg-white/5 border-white/10 focus-visible:ring-neon-purple/30 text-white placeholder:text-white/30"
-                />
-              </motion.div>
-              
-              <AnimatePresence>
-                {error && (
-                  <motion.div 
-                    className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-2 rounded-md"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
-                    <AlertCircle className="h-4 w-4" />
-                    {error}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent className="bg-purple-dark border-white/10">
+                  <SelectItem value="food">Food</SelectItem>
+                  <SelectItem value="transportation">Transportation</SelectItem>
+                  <SelectItem value="entertainment">Entertainment</SelectItem>
+                  <SelectItem value="shopping">Shopping</SelectItem>
+                  <SelectItem value="utilities">Utilities</SelectItem>
+                  <SelectItem value="health">Health</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                  <SelectItem value="travel">Travel</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
-          <DialogFooter className="flex gap-2 sm:gap-0">
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <Button 
-                variant="outline" 
-                onClick={onClose}
-                className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white"
+          <div>
+            <Label htmlFor="date" className="text-white/70 mb-1.5 block text-xs">Date & Time</Label>
+            <Input
+              id="date"
+              type="datetime-local"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
+              required
+            />
+          </div>
+          
+          <div className="bg-white/5 rounded-lg p-3 md:p-4 space-y-2">
+            <h4 className="text-xs font-medium text-white/80">Transaction Type</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { setIsExpense(true); setIsSavings(false); }}
+              >
+                <div className={`rounded-lg border p-3 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                  isExpense && !isSavings 
+                    ? "border-red-500/50 bg-red-500/10" 
+                    : "border-white/10 bg-white/5 hover:bg-white/10"
+                }`}>
+                  <ArrowDown className={`h-6 w-6 mb-1 ${isExpense && !isSavings ? "text-red-400" : "text-white/60"}`} />
+                  <span className={`text-xs font-medium ${isExpense && !isSavings ? "text-red-400" : "text-white/70"}`}>Expense</span>
+                </div>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { setIsExpense(false); setIsSavings(false); }}
+              >
+                <div className={`rounded-lg border p-3 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                  !isExpense && !isSavings 
+                    ? "border-green-500/50 bg-green-500/10" 
+                    : "border-white/10 bg-white/5 hover:bg-white/10"
+                }`}>
+                  <ArrowUp className={`h-6 w-6 mb-1 ${!isExpense && !isSavings ? "text-green-400" : "text-white/60"}`} />
+                  <span className={`text-xs font-medium ${!isExpense && !isSavings ? "text-green-400" : "text-white/70"}`}>Income</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="savings"
+              checked={isSavings}
+              onCheckedChange={(checked) => {
+                setIsSavings(checked);
+                if (checked) setIsExpense(true);
+              }}
+              className="data-[state=checked]:bg-blue-500"
+            />
+            <Label htmlFor="savings" className="text-white/70 text-xs cursor-pointer">Mark as Savings</Label>
+          </div>
+          
+          {isSavings && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Label htmlFor="savingsPurpose" className="text-white/70 mb-1.5 block text-xs">Savings Purpose</Label>
+              <Input
+                id="savingsPurpose"
+                placeholder="e.g., Emergency Fund, Vacation"
+                value={savingsPurpose}
+                onChange={(e) => setSavingsPurpose(e.target.value)}
+                className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
+              />
+            </motion.div>
+          )}
+          
+          <div>
+            <Label htmlFor="remarks" className="text-white/70 mb-1.5 block text-xs">Notes (Optional)</Label>
+            <Textarea
+              id="remarks"
+              placeholder="Add any additional notes"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white min-h-[80px]"
+            />
+          </div>
+          
+          <div className="flex justify-end gap-3 pt-2">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="border-white/10 text-white/70 hover:bg-white/5 hover:text-white"
               >
                 Cancel
               </Button>
             </motion.div>
             
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <Button 
-                onClick={handleSave}
-                className={cn(
-                  "text-white",
-                  transactionType === 'expense' && "bg-red-500 hover:bg-red-600",
-                  transactionType === 'income' && "bg-green-500 hover:bg-green-600",
-                  transactionType === 'savings' && "bg-blue-500 hover:bg-blue-600"
-                )}
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                type="submit"
+                className={`${
+                  transaction 
+                    ? "bg-neon-purple hover:bg-neon-purple/90" 
+                    : isSavings 
+                      ? "bg-blue-500 hover:bg-blue-600" 
+                      : isExpense 
+                        ? "bg-red-500 hover:bg-red-600" 
+                        : "bg-green-500 hover:bg-green-600"
+                } text-white`}
               >
-                {editTransaction ? 'Update' : 'Save'} Transaction
+                {transaction ? "Update" : "Add"} Transaction
               </Button>
             </motion.div>
-          </DialogFooter>
-        </motion.div>
-      </DialogContent>
-    </Dialog>
-  );
+          </div>
+        </motion.form>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
 };
 
 export default AddTransaction;

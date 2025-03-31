@@ -50,36 +50,131 @@ const TransactionContext = createContext<{
   updateTransaction: (transaction: Transaction) => void;
 } | undefined>(undefined);
 
+// Persist data to localStorage
+const persistData = (data: Transaction[]) => {
+  try {
+    localStorage.setItem('transactions', JSON.stringify(data));
+  } catch (e) {
+    console.error('Could not save to localStorage:', e);
+  }
+};
+
+// Load data from localStorage
+const loadPersistedData = (): Transaction[] | null => {
+  try {
+    const savedTransactions = localStorage.getItem('transactions');
+    if (savedTransactions) {
+      return JSON.parse(savedTransactions);
+    }
+    return null;
+  } catch (e) {
+    console.error('Could not load from localStorage:', e);
+    return null;
+  }
+};
+
 // Reducer
 function transactionReducer(state: TransactionState, action: TransactionAction): TransactionState {
+  let newTransactions: Transaction[];
+  
   switch (action.type) {
     case 'ADD_TRANSACTION':
+      newTransactions = [action.payload, ...state.transactions];
+      persistData(newTransactions);
       return {
         ...state,
-        transactions: [action.payload, ...state.transactions]
+        transactions: newTransactions
       };
+      
     case 'DELETE_TRANSACTION':
+      newTransactions = state.transactions.filter(transaction => transaction.id !== action.payload);
+      persistData(newTransactions);
       return {
         ...state,
-        transactions: state.transactions.filter(transaction => transaction.id !== action.payload)
+        transactions: newTransactions
       };
+      
     case 'UPDATE_TRANSACTION':
+      newTransactions = state.transactions.map(transaction => 
+        transaction.id === action.payload.id ? action.payload : transaction
+      );
+      persistData(newTransactions);
       return {
         ...state,
-        transactions: state.transactions.map(transaction => 
-          transaction.id === action.payload.id ? action.payload : transaction
-        )
+        transactions: newTransactions
       };
+      
     case 'SET_TRANSACTIONS':
       return {
         ...state,
         transactions: action.payload,
         loading: false
       };
+      
     default:
       return state;
   }
 }
+
+// Sample data for initial app experience
+const sampleTransactions: Transaction[] = [
+  {
+    id: '1',
+    amount: 1250,
+    description: 'Lunch at Spice Garden',
+    date: '2023-06-15T12:30:00.000Z',
+    category: 'food',
+    isExpense: true,
+    remarks: 'Business lunch with client'
+  },
+  {
+    id: '2',
+    amount: 3599,
+    description: 'Movie tickets',
+    date: '2023-06-14T19:00:00.000Z',
+    category: 'entertainment',
+    isExpense: true,
+    remarks: 'Date night'
+  },
+  {
+    id: '3',
+    amount: 8000,
+    description: 'Grocery shopping',
+    date: '2023-06-13T10:15:00.000Z',
+    category: 'food',
+    isExpense: true,
+    remarks: 'Weekly groceries'
+  },
+  {
+    id: '4',
+    amount: 75000,
+    description: 'Salary deposit',
+    date: '2023-06-01T09:00:00.000Z',
+    category: 'other',
+    isExpense: false,
+    remarks: 'Monthly salary'
+  },
+  {
+    id: '5',
+    amount: 4550,
+    description: 'Gas',
+    date: '2023-06-10T11:45:00.000Z',
+    category: 'transportation',
+    isExpense: true,
+    remarks: 'Road trip'
+  },
+  {
+    id: '6',
+    amount: 20000,
+    description: 'Emergency Fund',
+    date: '2023-06-05T14:20:00.000Z',
+    category: 'other',
+    isExpense: false,
+    isSavings: true,
+    savingsPurpose: 'Emergency expenses',
+    remarks: 'Monthly savings'
+  }
+];
 
 // Provider component
 export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -87,85 +182,17 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   // Load transactions from localStorage on mount
   useEffect(() => {
-    const savedTransactions = localStorage.getItem('transactions');
-    if (savedTransactions) {
-      try {
-        const parsedTransactions = JSON.parse(savedTransactions);
-        dispatch({ type: 'SET_TRANSACTIONS', payload: parsedTransactions });
-      } catch (error) {
-        console.error('Error parsing saved transactions:', error);
-        dispatch({ type: 'SET_TRANSACTIONS', payload: [] });
-      }
+    const persistedTransactions = loadPersistedData();
+    
+    if (persistedTransactions && persistedTransactions.length > 0) {
+      dispatch({ type: 'SET_TRANSACTIONS', payload: persistedTransactions });
     } else {
-      // Sample data
-      const sampleTransactions: Transaction[] = [
-        {
-          id: '1',
-          amount: 25.50,
-          description: 'Lunch at Sushi Place',
-          date: '2023-06-15T12:30:00.000Z',
-          category: 'food',
-          isExpense: true,
-          remarks: 'Business lunch with client'
-        },
-        {
-          id: '2',
-          amount: 35.99,
-          description: 'Movie tickets',
-          date: '2023-06-14T19:00:00.000Z',
-          category: 'entertainment',
-          isExpense: true,
-          remarks: 'Date night'
-        },
-        {
-          id: '3',
-          amount: 80.00,
-          description: 'Grocery shopping',
-          date: '2023-06-13T10:15:00.000Z',
-          category: 'food',
-          isExpense: true,
-          remarks: 'Weekly groceries'
-        },
-        {
-          id: '4',
-          amount: 1250.00,
-          description: 'Salary deposit',
-          date: '2023-06-01T09:00:00.000Z',
-          category: 'other',
-          isExpense: false,
-          remarks: 'Monthly salary'
-        },
-        {
-          id: '5',
-          amount: 45.50,
-          description: 'Gas',
-          date: '2023-06-10T11:45:00.000Z',
-          category: 'transportation',
-          isExpense: true,
-          remarks: 'Road trip'
-        },
-        {
-          id: '6',
-          amount: 200.00,
-          description: 'Emergency Fund',
-          date: '2023-06-05T14:20:00.000Z',
-          category: 'other',
-          isExpense: false,
-          isSavings: true,
-          savingsPurpose: 'Emergency expenses',
-          remarks: 'Monthly savings'
-        }
-      ];
+      // If no persisted data, load sample data
       dispatch({ type: 'SET_TRANSACTIONS', payload: sampleTransactions });
+      // Save sample data to localStorage
+      persistData(sampleTransactions);
     }
   }, []);
-
-  // Save transactions to localStorage whenever they change
-  useEffect(() => {
-    if (!state.loading) {
-      localStorage.setItem('transactions', JSON.stringify(state.transactions));
-    }
-  }, [state.transactions, state.loading]);
 
   // Actions
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
