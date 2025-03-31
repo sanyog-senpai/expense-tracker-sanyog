@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTransactions } from '@/context/TransactionContext';
 import Layout from '@/components/Layout';
@@ -28,6 +28,43 @@ const TransactionDetail = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
   const transaction = state.transactions.find(t => t.id === id);
+  
+  // Calculate before and after balance
+  const balanceInfo = useMemo(() => {
+    if (!transaction) return { before: 0, after: 0 };
+    
+    // Sort all transactions by date (oldest first)
+    const sortedTransactions = [...state.transactions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    let balance = 0;
+    let beforeBalance = 0;
+    let afterBalance = 0;
+    let foundTransaction = false;
+    
+    for (const t of sortedTransactions) {
+      // If this is our transaction, remember the balance before
+      if (t.id === transaction.id) {
+        beforeBalance = balance;
+        foundTransaction = true;
+      }
+      
+      // Update running balance
+      if (t.isExpense) {
+        balance -= t.amount;
+      } else {
+        balance += t.amount;
+      }
+      
+      // If we just processed our transaction, remember the balance after
+      if (t.id === transaction.id) {
+        afterBalance = balance;
+      }
+    }
+    
+    return { before: beforeBalance, after: afterBalance };
+  }, [transaction, state.transactions]);
   
   if (!transaction) {
     return (
@@ -105,6 +142,24 @@ const TransactionDetail = () => {
             <p className="text-white/60 text-sm mt-1 capitalize">
               {transaction.category} {transaction.isSavings && '• Savings'}
             </p>
+          </div>
+          
+          {/* Balance Information Section */}
+          <div className="bg-white/5 p-4 rounded-lg mb-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-xs font-medium text-white/60 mb-1">Before</h3>
+                <p className={`text-base font-mono font-semibold ${balanceInfo.before >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {formatCurrency(balanceInfo.before)}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-xs font-medium text-white/60 mb-1">After</h3>
+                <p className={`text-base font-mono font-semibold ${balanceInfo.after >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {formatCurrency(balanceInfo.after)}
+                </p>
+              </div>
+            </div>
           </div>
           
           <Separator className="bg-white/10 my-5" />
