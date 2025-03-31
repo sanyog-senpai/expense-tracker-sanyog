@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { Transaction } from '@/context/TransactionContext';
@@ -43,30 +44,46 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
     
     // If we're not doing comparison, process data by category
     if (comparisonType === 'none') {
-      const groupedByCategory = filteredTransactions.reduce((acc: Record<string, number>, transaction) => {
+      const groupedByCategory = filteredTransactions.reduce((acc: Record<string, {amount: number, count: number}>, transaction) => {
         const { category, amount } = transaction;
         if (!acc[category]) {
-          acc[category] = 0;
+          acc[category] = { amount: 0, count: 0 };
         }
-        acc[category] += amount;
+        acc[category].amount += amount;
+        acc[category].count += 1;
         return acc;
       }, {});
       
-      return Object.entries(groupedByCategory).map(([name, value]) => ({
+      return Object.entries(groupedByCategory).map(([name, data]) => ({
         name: name.charAt(0).toUpperCase() + name.slice(1),
-        value,
+        value: data.amount,
+        count: data.count
       }));
     }
     
     // For comparisons, we need to group data differently
     if (comparisonType === 'month') {
       // Group by month for the selected year
-      const groupedByMonth: Record<string, { expenses: number, income: number, savings: number }> = {};
+      const groupedByMonth: Record<string, { 
+        expenses: number, 
+        income: number, 
+        savings: number,
+        expenseCount: number,
+        incomeCount: number,
+        savingsCount: number 
+      }> = {};
       
       // Initialize all months
       for (let i = 0; i < 12; i++) {
         const monthName = format(new Date(parseInt(yearFilter), i, 1), 'MMM');
-        groupedByMonth[monthName] = { expenses: 0, income: 0, savings: 0 };
+        groupedByMonth[monthName] = { 
+          expenses: 0, 
+          income: 0, 
+          savings: 0,
+          expenseCount: 0,
+          incomeCount: 0,
+          savingsCount: 0
+        };
       }
       
       // Fill with actual data
@@ -79,10 +96,13 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
           
           if (t.isExpense && !t.isSavings) {
             groupedByMonth[month].expenses += t.amount;
+            groupedByMonth[month].expenseCount += 1;
           } else if (!t.isExpense) {
             groupedByMonth[month].income += t.amount;
+            groupedByMonth[month].incomeCount += 1;
           } else if (t.isSavings) {
             groupedByMonth[month].savings += t.amount;
+            groupedByMonth[month].savingsCount += 1;
           }
         }
       });
@@ -92,27 +112,47 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         name: month,
         expenses: data.expenses,
         income: data.income,
-        savings: data.savings
+        savings: data.savings,
+        expenseCount: data.expenseCount,
+        incomeCount: data.incomeCount,
+        savingsCount: data.savingsCount
       }));
     }
     
     if (comparisonType === 'year') {
       // Group by year
-      const groupedByYear: Record<string, { expenses: number, income: number, savings: number }> = {};
+      const groupedByYear: Record<string, { 
+        expenses: number, 
+        income: number, 
+        savings: number,
+        expenseCount: number,
+        incomeCount: number,
+        savingsCount: number
+      }> = {};
       
       transactions.forEach(t => {
         const year = format(parseISO(t.date), 'yyyy');
         
         if (!groupedByYear[year]) {
-          groupedByYear[year] = { expenses: 0, income: 0, savings: 0 };
+          groupedByYear[year] = { 
+            expenses: 0, 
+            income: 0, 
+            savings: 0,
+            expenseCount: 0,
+            incomeCount: 0,
+            savingsCount: 0
+          };
         }
         
         if (t.isExpense && !t.isSavings) {
           groupedByYear[year].expenses += t.amount;
+          groupedByYear[year].expenseCount += 1;
         } else if (!t.isExpense) {
           groupedByYear[year].income += t.amount;
+          groupedByYear[year].incomeCount += 1;
         } else if (t.isSavings) {
           groupedByYear[year].savings += t.amount;
+          groupedByYear[year].savingsCount += 1;
         }
       });
       
@@ -121,22 +161,47 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         name: year,
         expenses: data.expenses,
         income: data.income,
-        savings: data.savings
+        savings: data.savings,
+        expenseCount: data.expenseCount,
+        incomeCount: data.incomeCount,
+        savingsCount: data.savingsCount
       })).sort((a, b) => parseInt(a.name) - parseInt(b.name)); // Sort by year ascending
     }
     
     if (comparisonType === 'combined') {
       // Group by transaction type and sum up the total
+      const expenseTransactions = transactions.filter(t => t.isExpense && !t.isSavings);
+      const incomeTransactions = transactions.filter(t => !t.isExpense);
+      const savingsTransactions = transactions.filter(t => t.isSavings);
+      
       const totals = {
-        expenses: transactions.filter(t => t.isExpense && !t.isSavings).reduce((sum, t) => sum + t.amount, 0),
-        income: transactions.filter(t => !t.isExpense).reduce((sum, t) => sum + t.amount, 0),
-        savings: transactions.filter(t => t.isSavings).reduce((sum, t) => sum + t.amount, 0)
+        expenses: expenseTransactions.reduce((sum, t) => sum + t.amount, 0),
+        income: incomeTransactions.reduce((sum, t) => sum + t.amount, 0),
+        savings: savingsTransactions.reduce((sum, t) => sum + t.amount, 0),
+        expenseCount: expenseTransactions.length,
+        incomeCount: incomeTransactions.length,
+        savingsCount: savingsTransactions.length
       };
       
       return [
-        { name: 'Expenses', value: totals.expenses, color: '#ff6b8b' },
-        { name: 'Income', value: totals.income, color: '#6bffb8' },
-        { name: 'Savings', value: totals.savings, color: '#5271ff' }
+        { 
+          name: 'Expenses', 
+          value: totals.expenses, 
+          count: totals.expenseCount,
+          color: '#ff6b8b' 
+        },
+        { 
+          name: 'Income', 
+          value: totals.income, 
+          count: totals.incomeCount,
+          color: '#6bffb8' 
+        },
+        { 
+          name: 'Savings', 
+          value: totals.savings, 
+          count: totals.savingsCount,
+          color: '#5271ff' 
+        }
       ];
     }
     
@@ -157,13 +222,24 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
             // Skip the 'name' field which isn't a data point
             if (entry.dataKey === 'name') return null;
             
+            // Display count for transaction bars if available
+            const count = entry.payload[`${entry.dataKey.replace('Count', '')}Count`] || 
+                          entry.payload.count;
+            
+            const isCountField = entry.dataKey.includes('Count');
+            if (isCountField) return null;
+            
             return (
               <p 
                 key={`item-${index}`}
                 className="text-white font-bold text-base"
                 style={{ color: entry.color }}
               >
-                {entry.name}: {formatCurrency(entry.value)}
+                {entry.name}: {entry.dataKey.includes('Count') ? 
+                  `${entry.value} transactions` : 
+                  formatCurrency(entry.value)}
+                {count && !entry.dataKey.includes('Count') ? 
+                  ` (${count} transactions)` : ''}
               </p>
             );
           })}
@@ -340,9 +416,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
                 tickFormatter={(value) => {
                   if (value >= 1000) {
-                    return `रू${(value / 1000).toFixed(1)}k`;
+                    return `नेरू${(value / 1000).toFixed(1)}k`;
                   }
-                  return `रू${value}`;
+                  return `नेरू${value}`;
                 }}
                 domain={[0, 'dataMax + 500']}
               />
@@ -353,6 +429,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 animationBegin={0}
                 animationDuration={1200}
                 animationEasing="ease-out"
+                name="Amount"
               >
                 {chartData.map((entry, index) => (
                   <Cell 
@@ -362,6 +439,13 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   />
                 ))}
               </Bar>
+              <Bar 
+                dataKey="count" 
+                radius={[4, 4, 0, 0]}
+                fill="rgba(255, 255, 255, 0.3)"
+                name="Transactions"
+                barSize={10}
+              />
             </BarChart>
           ) : comparisonType === 'combined' ? (
             <BarChart data={chartData} barGap={8}>
@@ -376,9 +460,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
                 tickFormatter={(value) => {
                   if (value >= 1000) {
-                    return `रू${(value / 1000).toFixed(1)}k`;
+                    return `नेरू${(value / 1000).toFixed(1)}k`;
                   }
-                  return `रू${value}`;
+                  return `नेरू${value}`;
                 }}
                 domain={[0, 'dataMax + 500']}
               />
@@ -389,6 +473,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 animationBegin={0}
                 animationDuration={1200}
                 animationEasing="ease-out"
+                name="Amount"
               >
                 {chartData.map((entry, index) => (
                   <Cell 
@@ -398,6 +483,13 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   />
                 ))}
               </Bar>
+              <Bar 
+                dataKey="count" 
+                radius={[4, 4, 0, 0]}
+                fill="rgba(255, 255, 255, 0.3)"
+                name="Transactions"
+                barSize={10}
+              />
             </BarChart>
           ) : (
             <ComposedChart data={chartData} barGap={8}>
@@ -412,9 +504,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
                 tickFormatter={(value) => {
                   if (value >= 1000) {
-                    return `रू${(value / 1000).toFixed(1)}k`;
+                    return `नेरू${(value / 1000).toFixed(1)}k`;
                   }
-                  return `रू${value}`;
+                  return `नेरू${value}`;
                 }}
                 domain={[0, 'dataMax + 500']}
               />
@@ -439,6 +531,28 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 name="Savings"
                 radius={[4, 4, 0, 0]}
                 stackId="c"
+              />
+              {/* Transaction count bars */}
+              <Bar 
+                dataKey="expenseCount" 
+                fill="rgba(255, 107, 139, 0.3)" 
+                name="Expense Transactions"
+                radius={[4, 4, 0, 0]}
+                barSize={8}
+              />
+              <Bar 
+                dataKey="incomeCount" 
+                fill="rgba(107, 255, 184, 0.3)" 
+                name="Income Transactions"
+                radius={[4, 4, 0, 0]}
+                barSize={8}
+              />
+              <Bar 
+                dataKey="savingsCount" 
+                fill="rgba(82, 113, 255, 0.3)" 
+                name="Savings Transactions"
+                radius={[4, 4, 0, 0]}
+                barSize={8}
               />
             </ComposedChart>
           )}
