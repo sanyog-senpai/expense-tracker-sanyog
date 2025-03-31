@@ -64,6 +64,7 @@ const ExpenseTrackerApp = () => {
         description: "The transaction has been added successfully.",
       });
     }
+    setIsAddModalOpen(false);
     setEditingTransaction(undefined);
   };
 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
@@ -10,16 +11,50 @@ import TransactionDetail from './pages/TransactionDetail';
 
 const Index = () => {
   const { state, addTransaction, deleteTransaction, updateTransaction } = useTransactions();
+  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+  const [editingTransaction, setEditingTransaction] = React.useState<undefined | any>(undefined);
+
+  const handleAddTransaction = (transaction: any) => {
+    addTransaction(transaction);
+  };
+
+  const handleEditTransaction = (transaction: any) => {
+    setEditingTransaction(transaction);
+    setIsAddModalOpen(true);
+  };
+
+  const handleSaveTransaction = (transaction: any) => {
+    if (editingTransaction) {
+      updateTransaction({
+        ...transaction,
+        id: editingTransaction.id
+      });
+    } else {
+      addTransaction(transaction);
+    }
+    setEditingTransaction(undefined);
+  };
 
   return (
     <Layout>
       <Dashboard transactions={state.transactions} />
       <TransactionList
         transactions={state.transactions}
-        onEditTransaction={updateTransaction}
+        onEditTransaction={handleEditTransaction}
         onDeleteTransaction={deleteTransaction}
       />
-      <AddTransaction addTransaction={addTransaction} />
+      <AddTransaction 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        onSave={handleSaveTransaction}
+        editTransaction={editingTransaction}
+      />
+      <button 
+        onClick={() => setIsAddModalOpen(true)}
+        className="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 shadow-lg"
+      >
+        +
+      </button>
     </Layout>
   );
 };
