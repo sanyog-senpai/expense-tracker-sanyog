@@ -35,6 +35,12 @@ interface ComparisonChartDataItem {
 
 type ChartDataType = ChartDataItem[] | ComparisonChartDataItem[];
 
+// Type for category grouping
+interface CategoryData {
+  amount: number;
+  count: number;
+}
+
 const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
   const [dataType, setDataType] = useState<'expenses' | 'income' | 'savings'>('expenses');
@@ -64,7 +70,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
     
     // If we're not doing comparison, process data by category
     if (comparisonType === 'none') {
-      const groupedByCategory = filteredTransactions.reduce((acc: Record<string, {amount: number, count: number}>, transaction) => {
+      const groupedByCategory: Record<string, CategoryData> = filteredTransactions.reduce((acc: Record<string, CategoryData>, transaction) => {
         const { category, amount } = transaction;
         if (!acc[category]) {
           acc[category] = { amount: 0, count: 0 };
@@ -78,7 +84,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         name: name.charAt(0).toUpperCase() + name.slice(1),
         value: data.amount,
         count: data.count
-      }));
+      })) as ChartDataItem[];
     }
     
     // For comparisons, we need to group data differently
@@ -136,7 +142,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         expenseCount: data.expenseCount,
         incomeCount: data.incomeCount,
         savingsCount: data.savingsCount
-      }));
+      })) as ComparisonChartDataItem[];
     }
     
     if (comparisonType === 'year') {
@@ -185,7 +191,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         expenseCount: data.expenseCount,
         incomeCount: data.incomeCount,
         savingsCount: data.savingsCount
-      })).sort((a, b) => parseInt(a.name) - parseInt(b.name)); // Sort by year ascending
+      })).sort((a, b) => parseInt(a.name) - parseInt(b.name)) as ComparisonChartDataItem[]; // Sort by year ascending
     }
     
     if (comparisonType === 'combined') {
@@ -222,10 +228,10 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
           count: totals.savingsCount,
           color: '#5271ff' 
         }
-      ];
+      ] as ChartDataItem[];
     }
     
-    return [];
+    return [] as ChartDataItem[];
   }, [transactions, dataType, comparisonType, yearFilter]);
   
   // Futuristic color palette
