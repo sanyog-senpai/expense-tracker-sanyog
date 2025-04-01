@@ -213,17 +213,18 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   
   const renderTooltipContent = (props: any) => {
     if (props.payload && props.payload.length > 0) {
-      const { name } = props.payload[0].payload;
+      const payload = props.payload;
+      const { name } = payload[0].payload;
       
       return (
         <div className="bg-purple-dark/95 border border-neon-purple/30 p-3 rounded-lg shadow-lg">
           <p className="text-white font-medium text-sm">{name}</p>
-          {props.payload.map((entry: any, index: number) => {
+          {payload.map((entry: any, index: number) => {
             // Skip the 'name' field which isn't a data point
             if (entry.dataKey === 'name') return null;
             
             // Display count for transaction bars if available
-            const count = entry.payload[`${entry.dataKey.replace('Count', '')}Count`] || 
+            const count = entry.payload[`${entry.dataKey}Count`] || 
                           entry.payload.count;
             
             const isCountField = entry.dataKey.includes('Count');
@@ -257,7 +258,6 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
     );
   }
   
-  // Fix: removed comparison with empty string that was causing the TypeScript error
   const showComparisonSelector = chartType === 'bar';
   
   return (

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import { formatCurrency } from '@/utils/dateUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowDown, ArrowUp, Wallet, CreditCard } from 'lucide-react';
+import { ArrowDown, ArrowUp, Wallet, CreditCard, PiggyBank } from 'lucide-react';
 import AnimatedNumber from './AnimatedNumber';
 import ExpenseChart from './ExpenseChart';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,12 +22,16 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
       .reduce((sum, t) => sum + t.amount, 0);
       
     const totalExpenses = transactions
-      .filter(t => t.isExpense)
+      .filter(t => t.isExpense && !t.isSavings)
       .reduce((sum, t) => sum + t.amount, 0);
       
-    const balance = totalIncome - totalExpenses;
+    const totalSavings = transactions
+      .filter(t => t.isSavings)
+      .reduce((sum, t) => sum + t.amount, 0);
+      
+    const balance = totalIncome - totalExpenses - totalSavings;
     
-    return { totalIncome, totalExpenses, balance };
+    return { totalIncome, totalExpenses, totalSavings, balance };
   }, [transactions]);
   
   return (
@@ -93,8 +97,18 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 </div>
                 
                 <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/10 flex items-center justify-center">
+                      <PiggyBank className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-2xs md:text-xs font-medium text-white/70">Savings</p>
+                      <p className="text-xs md:text-sm font-semibold text-blue-400">
+                        {formatCurrency(stats.totalSavings)}
+                      </p>
+                    </div>
+                  </div>
                   <p className="text-2xs md:text-xs font-medium text-white/50">**** **** **** 4289</p>
-                  <p className="text-2xs md:text-xs font-medium text-white/50">06/25</p>
                 </div>
               </div>
             </CardContent>

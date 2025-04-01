@@ -11,6 +11,7 @@ export type Category =
   | 'health' 
   | 'education' 
   | 'travel' 
+  | 'savings'  
   | 'other';
 
 export interface Transaction {
@@ -170,8 +171,8 @@ const sampleTransactions: Transaction[] = [
     amount: 20000,
     description: 'Emergency Fund',
     date: '2023-06-05T14:20:00.000Z',
-    category: 'other',
-    isExpense: false,
+    category: 'savings',
+    isExpense: true,
     isSavings: true,
     savingsPurpose: 'Emergency expenses',
     remarks: 'Monthly savings'

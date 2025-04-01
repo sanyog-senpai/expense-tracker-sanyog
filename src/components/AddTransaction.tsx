@@ -88,9 +88,14 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                 {editTransaction ? "Edit Transaction" : "Add Transaction"}
               </DialogTitle>
               
-              <DialogClose className="w-7 h-7 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors">
+              <motion.button
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+                onClick={onClose}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
                 <X className="h-4 w-4 text-white/70" />
-              </DialogClose>
+              </motion.button>
             </div>
             
             <motion.form 
@@ -150,6 +155,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                       <SelectItem value="health">Health</SelectItem>
                       <SelectItem value="education">Education</SelectItem>
                       <SelectItem value="travel">Travel</SelectItem>
+                      <SelectItem value="savings">Savings</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -209,7 +215,12 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                   checked={isSavings}
                   onCheckedChange={(checked) => {
                     setIsSavings(checked);
-                    if (checked) setIsExpense(true);
+                    if (checked) {
+                      setIsExpense(true);
+                      if (category !== 'savings') {
+                        setCategory('savings');
+                      }
+                    }
                   }}
                   className="data-[state=checked]:bg-blue-500"
                 />
