@@ -268,34 +268,33 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
       const { name } = payload[0].payload;
       
       return (
-        <div className="bg-purple-dark/95 border border-neon-purple/30 rounded-lg shadow-lg p-2.5 max-w-[200px]">
-          <p className="text-white font-medium text-xs mb-1.5">{name}</p>
+        <div className="bg-[#1A1A2E]/95 border border-neon-purple/40 rounded-lg shadow-xl p-3 max-w-[180px]">
+          <div className="flex items-center border-b border-white/10 pb-1.5 mb-1.5">
+            <div className="w-2 h-2 rounded-full mr-1.5" 
+                style={{ background: payload[0].fill || payload[0].color }}></div>
+            <p className="text-white font-medium text-xs truncate">{name}</p>
+          </div>
+          
           {payload.map((entry: any, index: number) => {
-            // Skip the 'name' field which isn't a data point
-            if (entry.dataKey === 'name') return null;
+            // Skip the 'name' field and count fields for the main display
+            if (entry.dataKey === 'name' || entry.dataKey.includes('Count')) return null;
             
-            // Display count for transaction bars if available
-            const count = entry.payload[`${entry.dataKey}Count`] || 
-                          entry.payload.count;
-            
-            const isCountField = entry.dataKey.includes('Count');
-            if (isCountField) return null;
+            // Get transaction count if available
+            const count = entry.payload[`${entry.dataKey}Count`] || entry.payload.count;
             
             return (
               <div 
                 key={`item-${index}`}
-                className="flex justify-between items-center my-1"
+                className="flex justify-between items-center my-1 border-b border-white/5 pb-1 last:border-0"
               >
-                <span className="text-2xs text-white/80">{entry.name}:</span>
-                <span className="text-xs font-semibold" style={{ color: entry.color }}>
-                  {entry.dataKey.includes('Count') ? 
-                    `${entry.value}` : 
-                    `रु ${entry.value.toLocaleString()}`}
+                <span className="text-2xs font-medium text-white/70">{entry.name}:</span>
+                <span className="text-xs font-semibold text-white">
+                  {entry.value === 0 ? '—' : `रु ${entry.value.toLocaleString()}`}
                 </span>
-                {count && !entry.dataKey.includes('Count') && (
-                  <span className="block text-2xs text-white/60 mt-0.5">
-                    {count} transaction{count !== 1 ? 's' : ''}
-                  </span>
+                {count && (
+                  <div className="w-full text-2xs text-white/40 mt-0.5 text-right">
+                    {count} txn{count !== 1 ? 's' : ''}
+                  </div>
                 )}
               </div>
             );
@@ -316,8 +315,13 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   
   const showComparisonSelector = chartType === 'bar';
   
-  // Get correct currency symbol
-  const getCurrencySymbol = () => "रु";
+  // Fixed currency formatter functions
+  const formatYAxisTick = (value: number) => {
+    if (value >= 1000) {
+      return `रु${(value / 1000).toFixed(1)}k`;
+    }
+    return `रु${value}`;
+  };
   
   return (
     <motion.div 
@@ -496,12 +500,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 <YAxis 
                   tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
                   axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-                  tickFormatter={(value) => {
-                    if (value >= 1000) {
-                      return `रु${(value / 1000).toFixed(1)}k`;
-                    }
-                    return `रु${value}`;
-                  }}
+                  tickFormatter={formatYAxisTick}
                   domain={[0, 'dataMax + 500']}
                 />
                 <Tooltip content={renderTooltipContent} />
@@ -540,12 +539,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 <YAxis 
                   tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
                   axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-                  tickFormatter={(value) => {
-                    if (value >= 1000) {
-                      return `रु${(value / 1000).toFixed(1)}k`;
-                    }
-                    return `रु${value}`;
-                  }}
+                  tickFormatter={formatYAxisTick}
                   domain={[0, 'dataMax + 500']}
                 />
                 <Tooltip content={renderTooltipContent} />
@@ -584,12 +578,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                 <YAxis 
                   tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
                   axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-                  tickFormatter={(value) => {
-                    if (value >= 1000) {
-                      return `रु${(value / 1000).toFixed(1)}k`;
-                    }
-                    return `रु${value}`;
-                  }}
+                  tickFormatter={formatYAxisTick}
                   domain={[0, 'dataMax + 500']}
                 />
                 <Tooltip content={renderTooltipContent} />

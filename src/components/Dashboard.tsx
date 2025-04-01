@@ -49,12 +49,12 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="card-inner-3d">
-          <Card className="glass-card relative h-auto overflow-hidden border-2 border-neon-purple/30 shadow-2xl bg-gradient-to-br from-purple-dark/90 to-black/80 hover:border-neon-purple/50 transition-all duration-300">
+          <Card className="relative h-auto overflow-hidden border-2 border-neon-purple/40 shadow-2xl bg-gradient-to-br from-purple-dark/80 to-black/70 hover:border-neon-purple/60 transition-all duration-300">
             {/* Background decorative elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-neon-purple/20 rounded-full filter blur-xl"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-neon-blue/20 rounded-full filter blur-xl"></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-20 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 rotate-45 filter blur-xl"></div>
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-neon-purple/30 rounded-full filter blur-xl"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-neon-blue/30 rounded-full filter blur-xl"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-20 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 rotate-45 filter blur-xl"></div>
             </div>
             
             <CardContent className="p-5 md:p-6 relative">
@@ -123,13 +123,13 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         </div>
       </motion.div>
       
-      {/* Chart Section - Enhanced styling */}
+      {/* Chart Section - Enhanced styling with distinct outer card */}
       <motion.div
         initial={slideUp.initial}
         animate={slideUp.animate}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <Card className="glass-card overflow-hidden border-2 border-neon-blue/20 shadow-xl bg-gradient-to-br from-purple-dark/90 to-black/80 hover:border-neon-blue/40 transition-all duration-300">
+        <Card className="overflow-hidden border-2 border-neon-blue/30 shadow-xl bg-gradient-to-br from-[#1a1a2e] to-[#16213e] hover:border-neon-blue/50 transition-all duration-300">
           <CardContent className="p-3 md:p-4">
             <ExpenseChart transactions={transactions} />
           </CardContent>

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import TransactionItem from './TransactionItem';
@@ -134,7 +133,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
     if (filter === 'expense') return 'Total Expenses';
     if (filter === 'income') return 'Total Income';
     if (filter === 'savings') return 'Total Savings';
-    return 'Balance';
+    return 'Net Balance';
   };
   
   // Get appropriate color for total amount card
@@ -143,6 +142,26 @@ const TransactionList: React.FC<TransactionListProps> = ({
     if (filter === 'income') return 'from-green-500/20 to-green-600/10 border-green-400/30 text-green-400';
     if (filter === 'savings') return 'from-blue-500/20 to-blue-600/10 border-blue-400/30 text-blue-400';
     return 'from-neon-purple/20 to-neon-blue/10 border-neon-purple/30 text-white';
+  };
+  
+  // Get filter period description
+  const getFilterPeriod = () => {
+    if (monthFilter !== 'All' && yearFilter !== 'All') {
+      return `${monthFilter} ${yearFilter}`;
+    } else if (monthFilter !== 'All') {
+      return monthFilter;
+    } else if (yearFilter !== 'All') {
+      return yearFilter;
+    }
+    return 'All Time';
+  };
+  
+  // Get icon for the summary card
+  const getSummaryIcon = () => {
+    if (filter === 'expense') return <ArrowDown className="h-4 w-4 text-red-400" />;
+    if (filter === 'income') return <ArrowUp className="h-4 w-4 text-green-400" />;
+    if (filter === 'savings') return <PiggyBank className="h-4 w-4 text-blue-400" />;
+    return <CalculatorIcon className="h-4 w-4 text-neon-purple" />;
   };
   
   if (transactions.length === 0) {
@@ -351,34 +370,37 @@ const TransactionList: React.FC<TransactionListProps> = ({
           </div>
         </div>
         
-        {/* New Total Amount Card */}
+        {/* New Enhanced Total Amount Card */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className="mt-2"
         >
-          <Card className={`p-0.5 bg-gradient-to-br ${getTotalAmountColor()} border rounded-lg shadow-lg`}>
-            <CardContent className="p-3 flex items-center justify-between">
+          <Card className={`overflow-hidden border-2 shadow-lg bg-gradient-to-br ${getTotalAmountColor()}`}>
+            <CardContent className="p-4 flex items-center justify-between">
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-3">
-                  <CalculatorIcon className="h-4 w-4 text-white" />
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3 shadow-inner shadow-white/5">
+                  {getSummaryIcon()}
                 </div>
                 <div>
-                  <p className="text-xs text-white/70">{getTotalAmountLabel()}</p>
-                  <p className="text-sm font-semibold text-white">
+                  <div className="flex items-center">
+                    <p className="text-xs text-white/80 font-medium">{getTotalAmountLabel()}</p>
+                    <span className="text-2xs text-white/50 ml-2 px-1.5 py-0.5 bg-white/10 rounded-full">{getFilterPeriod()}</span>
+                  </div>
+                  <p className="text-base md:text-lg font-semibold text-white mt-0.5">
                     {formatCurrency(totalFilteredAmount)}
                   </p>
                 </div>
               </div>
-              <div className="text-2xs text-white/50">
+              <div className="text-2xs text-white/60 bg-white/10 px-2 py-1 rounded-full">
                 {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </motion.div>
-      
+
       {filteredTransactions.length === 0 ? (
         <motion.div 
           className="flex items-center justify-center h-[200px] glass-card neon-border rounded-xl"
