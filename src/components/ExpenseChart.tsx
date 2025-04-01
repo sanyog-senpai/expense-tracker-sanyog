@@ -15,6 +15,26 @@ interface ExpenseChartProps {
   transactions: Transaction[];
 }
 
+// Define types for our chart data
+interface ChartDataItem {
+  name: string;
+  value: number;
+  count: number;
+  color?: string;
+}
+
+interface ComparisonChartDataItem {
+  name: string;
+  expenses: number;
+  income: number;
+  savings: number;
+  expenseCount: number;
+  incomeCount: number;
+  savingsCount: number;
+}
+
+type ChartDataType = ChartDataItem[] | ComparisonChartDataItem[];
+
 const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
   const [dataType, setDataType] = useState<'expenses' | 'income' | 'savings'>('expenses');
