@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, PieChartIcon, CalendarIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, scaleIn } from '@/lib/animations';
-import { formatCurrency } from '@/utils/dateUtils';
+import { formatCurrency, formatTime, getCategoryIcon } from '@/utils/dateUtils';
 import { format, parseISO } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 interface ExpenseChartProps {
   transactions: Transaction[];
@@ -58,7 +59,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   }, [transactions]);
   
   const chartData = useMemo(() => {
-    let filteredTransactions;
+    let filteredTransactions: Transaction[];
     
     if (dataType === 'expenses') {
       filteredTransactions = transactions.filter(t => t.isExpense && !t.isSavings);
@@ -234,8 +235,8 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
     return [] as ChartDataItem[];
   }, [transactions, dataType, comparisonType, yearFilter]);
   
-  // Futuristic color palette
-  const COLORS = ['#a269ff', '#5271ff', '#ff56ee', '#6bffb8', '#ff6b8b', '#ffb156'];
+  // Enhanced color palette - more vibrant and distinguishable
+  const COLORS = ['#8b5cf6', '#ec4899', '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
   
   const renderTooltipContent = (props: any) => {
     if (props.payload && props.payload.length > 0) {
@@ -243,7 +244,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
       const { name } = payload[0].payload;
       
       return (
-        <div className="bg-purple-dark/95 border border-neon-purple/30 p-3 rounded-lg shadow-lg">
+        <div className="bg-purple-dark/95 border border-neon-purple rounded-lg shadow-lg p-3">
           <p className="text-white font-medium text-sm">{name}</p>
           {payload.map((entry: any, index: number) => {
             // Skip the 'name' field which isn't a data point
@@ -286,6 +287,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   
   const showComparisonSelector = chartType === 'bar';
   
+  // Get correct currency symbol
+  const getCurrencySymbol = () => "नेरू";
+  
   return (
     <motion.div 
       className="space-y-4"
@@ -298,7 +302,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         <h3 className="text-sm md:text-base font-medium text-white">Financial Summary</h3>
         
         <motion.div 
-          className="flex items-center space-x-1 md:space-x-2 bg-white/5 rounded-full px-2 py-1 border border-white/10"
+          className="flex items-center space-x-1 md:space-x-2 bg-white/5 rounded-full px-2 py-1.5 border border-white/10"
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
@@ -317,273 +321,275 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         </motion.div>
       </div>
       
-      <Tabs 
-        value={dataType} 
-        onValueChange={(value) => setDataType(value as any)}
-        className="w-full"
-      >
-        <TabsList className="bg-white/5 p-0.5 w-full grid grid-cols-3">
-          <TabsTrigger 
-            value="expenses" 
-            className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
-          >
-            Expenses
-          </TabsTrigger>
-          <TabsTrigger 
-            value="income"
-            className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
-          >
-            Income
-          </TabsTrigger>
-          <TabsTrigger 
-            value="savings"
-            className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
-          >
-            Savings
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      {showComparisonSelector && (
-        <div className="flex items-center space-x-2">
-          <Select
-            value={comparisonType}
-            onValueChange={(value: any) => setComparisonType(value)}
-          >
-            <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 text-xs w-full">
-              <div className="flex items-center">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1.5 text-white/70" />
-                <SelectValue placeholder="Compare by">
-                  {comparisonType === 'none' ? 'No Comparison' : 
-                   comparisonType === 'month' ? 'Monthly Comparison' : 
-                   comparisonType === 'year' ? 'Yearly Comparison' : 
-                   'Combined View'}
-                </SelectValue>
-              </div>
-            </SelectTrigger>
-            <SelectContent className="bg-purple-dark border-white/10">
-              <SelectItem value="none" className="text-white text-xs">No Comparison</SelectItem>
-              <SelectItem value="month" className="text-white text-xs">Monthly Comparison</SelectItem>
-              <SelectItem value="year" className="text-white text-xs">Yearly Comparison</SelectItem>
-              <SelectItem value="combined" className="text-white text-xs">Combined View</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {comparisonType === 'month' && (
-            <Select
-              value={yearFilter}
-              onValueChange={setYearFilter}
+      <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+        <Tabs 
+          value={dataType} 
+          onValueChange={(value) => setDataType(value as any)}
+          className="w-full mb-4"
+        >
+          <TabsList className="bg-white/5 p-0.5 w-full grid grid-cols-3">
+            <TabsTrigger 
+              value="expenses" 
+              className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
             >
-              <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 text-xs w-24">
-                <SelectValue placeholder="Year" />
+              Expenses
+            </TabsTrigger>
+            <TabsTrigger 
+              value="income"
+              className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
+            >
+              Income
+            </TabsTrigger>
+            <TabsTrigger 
+              value="savings"
+              className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400 data-[state=inactive]:text-white/50 text-2xs md:text-xs h-7 md:h-8"
+            >
+              Savings
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        {showComparisonSelector && (
+          <div className="flex items-center space-x-2 mb-4">
+            <Select
+              value={comparisonType}
+              onValueChange={(value: any) => setComparisonType(value)}
+            >
+              <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 text-xs w-full">
+                <div className="flex items-center">
+                  <CalendarIcon className="h-3.5 w-3.5 mr-1.5 text-white/70" />
+                  <SelectValue placeholder="Compare by">
+                    {comparisonType === 'none' ? 'No Comparison' : 
+                     comparisonType === 'month' ? 'Monthly Comparison' : 
+                     comparisonType === 'year' ? 'Yearly Comparison' : 
+                     'Combined View'}
+                  </SelectValue>
+                </div>
               </SelectTrigger>
               <SelectContent className="bg-purple-dark border-white/10">
-                {availableYears.map(year => (
-                  <SelectItem key={year} value={year} className="text-white text-xs">
-                    {year}
-                  </SelectItem>
-                ))}
+                <SelectItem value="none" className="text-white text-xs">No Comparison</SelectItem>
+                <SelectItem value="month" className="text-white text-xs">Monthly Comparison</SelectItem>
+                <SelectItem value="year" className="text-white text-xs">Yearly Comparison</SelectItem>
+                <SelectItem value="combined" className="text-white text-xs">Combined View</SelectItem>
               </SelectContent>
             </Select>
-          )}
-        </div>
-      )}
-      
-      <motion.div 
-        className="w-full h-[250px]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        variants={scaleIn}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          {chartType === 'pie' && comparisonType === 'none' ? (
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-                strokeWidth={2}
-                stroke="rgba(255, 255, 255, 0.1)"
-                animationBegin={0}
-                animationDuration={1200}
-                animationEasing="ease-out"
+            
+            {comparisonType === 'month' && (
+              <Select
+                value={yearFilter}
+                onValueChange={setYearFilter}
               >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[index % COLORS.length]} 
-                    className="filter drop-shadow-lg"
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={renderTooltipContent} />
-              <Legend 
-                formatter={(value: string) => <span className="text-white/90 text-xs md:text-sm">{value}</span>}
-                iconType="circle"
-                iconSize={10}
-              />
-            </PieChart>
-          ) : comparisonType === 'none' ? (
-            <BarChart data={chartData} barGap={8}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
-                axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-              />
-              <YAxis 
-                tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
-                axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-                tickFormatter={(value) => {
-                  if (value >= 1000) {
-                    return `नेरू${(value / 1000).toFixed(1)}k`;
-                  }
-                  return `नेरू${value}`;
-                }}
-                domain={[0, 'dataMax + 500']}
-              />
-              <Tooltip content={renderTooltipContent} />
-              <Bar 
-                dataKey="value" 
-                radius={[4, 4, 0, 0]}
-                animationBegin={0}
-                animationDuration={1200}
-                animationEasing="ease-out"
-                name="Amount"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[index % COLORS.length]} 
-                    className="filter drop-shadow-lg"
-                  />
-                ))}
-              </Bar>
-              <Bar 
-                dataKey="count" 
-                radius={[4, 4, 0, 0]}
-                fill="rgba(255, 255, 255, 0.3)"
-                name="Transactions"
-                barSize={10}
-              />
-            </BarChart>
-          ) : comparisonType === 'combined' ? (
-            <BarChart data={chartData} barGap={8}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
-                axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-              />
-              <YAxis 
-                tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
-                axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-                tickFormatter={(value) => {
-                  if (value >= 1000) {
-                    return `नेरू${(value / 1000).toFixed(1)}k`;
-                  }
-                  return `नेरू${value}`;
-                }}
-                domain={[0, 'dataMax + 500']}
-              />
-              <Tooltip content={renderTooltipContent} />
-              <Bar 
-                dataKey="value" 
-                radius={[4, 4, 0, 0]}
-                animationBegin={0}
-                animationDuration={1200}
-                animationEasing="ease-out"
-                name="Amount"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color || COLORS[index % COLORS.length]} 
-                    className="filter drop-shadow-lg"
-                  />
-                ))}
-              </Bar>
-              <Bar 
-                dataKey="count" 
-                radius={[4, 4, 0, 0]}
-                fill="rgba(255, 255, 255, 0.3)"
-                name="Transactions"
-                barSize={10}
-              />
-            </BarChart>
-          ) : (
-            <ComposedChart data={chartData} barGap={8}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
-                axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-              />
-              <YAxis 
-                tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
-                axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-                tickFormatter={(value) => {
-                  if (value >= 1000) {
-                    return `नेरू${(value / 1000).toFixed(1)}k`;
-                  }
-                  return `नेरू${value}`;
-                }}
-                domain={[0, 'dataMax + 500']}
-              />
-              <Tooltip content={renderTooltipContent} />
-              <Bar 
-                dataKey="expenses" 
-                fill="#ff6b8b" 
-                name="Expenses"
-                radius={[4, 4, 0, 0]}
-                stackId="a"
-              />
-              <Bar 
-                dataKey="income" 
-                fill="#6bffb8" 
-                name="Income"
-                radius={[4, 4, 0, 0]}
-                stackId="b"
-              />
-              <Bar 
-                dataKey="savings" 
-                fill="#5271ff" 
-                name="Savings"
-                radius={[4, 4, 0, 0]}
-                stackId="c"
-              />
-              {/* Transaction count bars */}
-              <Bar 
-                dataKey="expenseCount" 
-                fill="rgba(255, 107, 139, 0.3)" 
-                name="Expense Transactions"
-                radius={[4, 4, 0, 0]}
-                barSize={8}
-              />
-              <Bar 
-                dataKey="incomeCount" 
-                fill="rgba(107, 255, 184, 0.3)" 
-                name="Income Transactions"
-                radius={[4, 4, 0, 0]}
-                barSize={8}
-              />
-              <Bar 
-                dataKey="savingsCount" 
-                fill="rgba(82, 113, 255, 0.3)" 
-                name="Savings Transactions"
-                radius={[4, 4, 0, 0]}
-                barSize={8}
-              />
-            </ComposedChart>
-          )}
-        </ResponsiveContainer>
-      </motion.div>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 text-xs w-24">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent className="bg-purple-dark border-white/10">
+                  {availableYears.map(year => (
+                    <SelectItem key={year} value={year} className="text-white text-xs">
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
+        
+        <motion.div 
+          className="w-full h-[250px]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          variants={scaleIn}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            {chartType === 'pie' && comparisonType === 'none' ? (
+              <PieChart>
+                <Pie
+                  data={chartData as ChartDataItem[]}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                  strokeWidth={2}
+                  stroke="rgba(255, 255, 255, 0.1)"
+                  animationBegin={0}
+                  animationDuration={1200}
+                  animationEasing="ease-out"
+                >
+                  {(chartData as ChartDataItem[]).map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      className="filter drop-shadow-lg"
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={renderTooltipContent} />
+                <Legend 
+                  formatter={(value: string) => <span className="text-white/90 text-xs md:text-sm">{value}</span>}
+                  iconType="circle"
+                  iconSize={10}
+                />
+              </PieChart>
+            ) : comparisonType === 'none' ? (
+              <BarChart data={chartData as ChartDataItem[]} barGap={8}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
+                  axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
+                />
+                <YAxis 
+                  tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
+                  axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1000) {
+                      return `${getCurrencySymbol()}${(value / 1000).toFixed(1)}k`;
+                    }
+                    return `${getCurrencySymbol()}${value}`;
+                  }}
+                  domain={[0, 'dataMax + 500']}
+                />
+                <Tooltip content={renderTooltipContent} />
+                <Bar 
+                  dataKey="value" 
+                  radius={[4, 4, 0, 0]}
+                  animationBegin={0}
+                  animationDuration={1200}
+                  animationEasing="ease-out"
+                  name="Amount"
+                >
+                  {(chartData as ChartDataItem[]).map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      className="filter drop-shadow-lg"
+                    />
+                  ))}
+                </Bar>
+                <Bar 
+                  dataKey="count" 
+                  radius={[4, 4, 0, 0]}
+                  fill="rgba(255, 255, 255, 0.3)"
+                  name="Transactions"
+                  barSize={10}
+                />
+              </BarChart>
+            ) : comparisonType === 'combined' ? (
+              <BarChart data={chartData as ChartDataItem[]} barGap={8}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
+                  axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
+                />
+                <YAxis 
+                  tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
+                  axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1000) {
+                      return `${getCurrencySymbol()}${(value / 1000).toFixed(1)}k`;
+                    }
+                    return `${getCurrencySymbol()}${value}`;
+                  }}
+                  domain={[0, 'dataMax + 500']}
+                />
+                <Tooltip content={renderTooltipContent} />
+                <Bar 
+                  dataKey="value" 
+                  radius={[4, 4, 0, 0]}
+                  animationBegin={0}
+                  animationDuration={1200}
+                  animationEasing="ease-out"
+                  name="Amount"
+                >
+                  {(chartData as ChartDataItem[]).map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color || COLORS[index % COLORS.length]} 
+                      className="filter drop-shadow-lg"
+                    />
+                  ))}
+                </Bar>
+                <Bar 
+                  dataKey="count" 
+                  radius={[4, 4, 0, 0]}
+                  fill="rgba(255, 255, 255, 0.3)"
+                  name="Transactions"
+                  barSize={10}
+                />
+              </BarChart>
+            ) : (
+              <ComposedChart data={chartData as ComparisonChartDataItem[]} barGap={8}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
+                  axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
+                />
+                <YAxis 
+                  tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
+                  axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1000) {
+                      return `${getCurrencySymbol()}${(value / 1000).toFixed(1)}k`;
+                    }
+                    return `${getCurrencySymbol()}${value}`;
+                  }}
+                  domain={[0, 'dataMax + 500']}
+                />
+                <Tooltip content={renderTooltipContent} />
+                <Bar 
+                  dataKey="expenses" 
+                  fill="#ff6b8b" 
+                  name="Expenses"
+                  radius={[4, 4, 0, 0]}
+                  stackId="a"
+                />
+                <Bar 
+                  dataKey="income" 
+                  fill="#6bffb8" 
+                  name="Income"
+                  radius={[4, 4, 0, 0]}
+                  stackId="b"
+                />
+                <Bar 
+                  dataKey="savings" 
+                  fill="#5271ff" 
+                  name="Savings"
+                  radius={[4, 4, 0, 0]}
+                  stackId="c"
+                />
+                {/* Transaction count bars - slightly altered for clarity */}
+                <Bar 
+                  dataKey="expenseCount" 
+                  fill="rgba(255, 107, 139, 0.3)" 
+                  name="Expense Transactions"
+                  radius={[4, 4, 0, 0]}
+                  barSize={8}
+                />
+                <Bar 
+                  dataKey="incomeCount" 
+                  fill="rgba(107, 255, 184, 0.3)" 
+                  name="Income Transactions"
+                  radius={[4, 4, 0, 0]}
+                  barSize={8}
+                />
+                <Bar 
+                  dataKey="savingsCount" 
+                  fill="rgba(82, 113, 255, 0.3)" 
+                  name="Savings Transactions"
+                  radius={[4, 4, 0, 0]}
+                  barSize={8}
+                />
+              </ComposedChart>
+            )}
+          </ResponsiveContainer>
+        </motion.div>
+      </div>
     </motion.div>
   );
 };
