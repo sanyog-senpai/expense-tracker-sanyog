@@ -4,13 +4,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import { Transaction } from '@/context/TransactionContext';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, PieChartIcon, CalendarIcon } from 'lucide-react';
+import { BarChart3, PieChartIcon, CalendarIcon, CalculatorIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, scaleIn } from '@/lib/animations';
 import { formatCurrency, formatTime, getCategoryIcon } from '@/utils/dateUtils';
 import { format, parseISO } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Card } from '@/components/ui/card';
 
 interface ExpenseChartProps {
   transactions: Transaction[];
@@ -234,6 +235,29 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
     
     return [] as ChartDataItem[];
   }, [transactions, dataType, comparisonType, yearFilter]);
+
+  // Calculate total for the selected data
+  const totalAmount = useMemo(() => {
+    if (Array.isArray(chartData) && chartData.length > 0) {
+      if ('value' in chartData[0]) {
+        // Single category data (pie chart or combined view)
+        return (chartData as ChartDataItem[]).reduce((sum, item) => sum + item.value, 0);
+      } else if ('expenses' in chartData[0]) {
+        // Comparison data (monthly/yearly)
+        const data = chartData as ComparisonChartDataItem[];
+        
+        // Sum based on the selected data type
+        if (dataType === 'expenses') {
+          return data.reduce((sum, item) => sum + item.expenses, 0);
+        } else if (dataType === 'income') {
+          return data.reduce((sum, item) => sum + item.income, 0);
+        } else { // savings
+          return data.reduce((sum, item) => sum + item.savings, 0);
+        }
+      }
+    }
+    return 0;
+  }, [chartData, dataType]);
   
   // Enhanced color palette - more vibrant and distinguishable
   const COLORS = ['#8b5cf6', '#ec4899', '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
@@ -321,7 +345,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         </motion.div>
       </div>
       
-      <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+      <div className="p-3 rounded-lg bg-gradient-to-br from-white/10 to-white/5 border border-white/10">
         <Tabs 
           value={dataType} 
           onValueChange={(value) => setDataType(value as any)}
@@ -393,6 +417,28 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
             )}
           </div>
         )}
+        
+        {/* Total amount card */}
+        <Card className="mb-4 p-3 bg-gradient-to-r from-neon-purple/20 to-neon-blue/20 border border-white/10 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <CalculatorIcon className="h-4 w-4 mr-2 text-neon-purple" />
+              <span className="text-xs md:text-sm text-white/80">
+                Total {dataType.charAt(0).toUpperCase() + dataType.slice(1)}
+                {comparisonType !== 'none' ? (
+                  comparisonType === 'month' 
+                    ? ` (${yearFilter})` 
+                    : comparisonType === 'year' 
+                      ? ' (All Years)' 
+                      : ' (Combined)'
+                ) : ''}:
+              </span>
+            </div>
+            <span className="text-sm md:text-base font-semibold text-white">
+              {formatCurrency(totalAmount)}
+            </span>
+          </div>
+        </Card>
         
         <motion.div 
           className="w-full h-[250px]"

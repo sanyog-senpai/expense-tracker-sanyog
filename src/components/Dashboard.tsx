@@ -74,11 +74,11 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 </div>
               </div>
               
-              {/* Main stats in single row with dividers */}
-              <div className="grid grid-cols-3 gap-2 p-4 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+              {/* Main stats in single row with enhanced styling */}
+              <div className="grid grid-cols-3 gap-2 p-4 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-lg">
                 {/* Income */}
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-2">
+                <div className="flex flex-col items-center p-2 rounded-lg bg-green-500/10 border border-green-400/20">
+                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center mb-2">
                     <ArrowUp className="h-4 w-4 text-green-400" />
                   </div>
                   <p className="text-2xs md:text-xs font-medium text-white/70">Income</p>
@@ -88,10 +88,8 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 </div>
                 
                 {/* Expenses */}
-                <div className="flex flex-col items-center relative">
-                  <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-white/0 via-white/10 to-white/0"></div>
-                  <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-white/0 via-white/10 to-white/0"></div>
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-2">
+                <div className="flex flex-col items-center p-2 rounded-lg bg-red-500/10 border border-red-400/20">
+                  <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center mb-2">
                     <ArrowDown className="h-4 w-4 text-red-400" />
                   </div>
                   <p className="text-2xs md:text-xs font-medium text-white/70">Expenses</p>
@@ -101,8 +99,8 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 </div>
                 
                 {/* Savings */}
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-2">
+                <div className="flex flex-col items-center p-2 rounded-lg bg-blue-500/10 border border-blue-400/20">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center mb-2">
                     <PiggyBank className="h-4 w-4 text-blue-400" />
                   </div>
                   <p className="text-2xs md:text-xs font-medium text-white/70">Savings</p>
@@ -125,13 +123,13 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         </div>
       </motion.div>
       
-      {/* Chart Section */}
+      {/* Chart Section - Enhanced styling */}
       <motion.div
         initial={slideUp.initial}
         animate={slideUp.animate}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <Card className="glass-card neon-border overflow-hidden border-0 shadow-xl">
+        <Card className="glass-card overflow-hidden border-0 shadow-xl bg-gradient-to-br from-purple-dark/90 to-black/70">
           <CardContent className="p-3 md:p-4">
             <ExpenseChart transactions={transactions} />
           </CardContent>
