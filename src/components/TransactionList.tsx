@@ -1,14 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import TransactionItem from './TransactionItem';
-import { groupTransactionsByDate } from '@/utils/dateUtils';
+import { groupTransactionsByDate, formatCurrency } from '@/utils/dateUtils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter, 
-  Calendar, Download, FileDown, FileSpreadsheet 
+  Calendar, Download, FileDown, FileSpreadsheet, CalculatorIcon
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +79,23 @@ const TransactionList: React.FC<TransactionListProps> = ({
     return true;
   });
   
+  // Calculate the total amount of filtered transactions
+  const totalFilteredAmount = useMemo(() => {
+    if (filter === 'expense') {
+      return filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    } else if (filter === 'income') {
+      return filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    } else if (filter === 'savings') {
+      return filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    } else {
+      // For 'all' filter, calculate total balance
+      const income = filteredTransactions.filter(t => !t.isExpense).reduce((sum, t) => sum + t.amount, 0);
+      const expenses = filteredTransactions.filter(t => t.isExpense && !t.isSavings).reduce((sum, t) => sum + t.amount, 0);
+      const savings = filteredTransactions.filter(t => t.isSavings).reduce((sum, t) => sum + t.amount, 0);
+      return income - expenses - savings;
+    }
+  }, [filteredTransactions, filter]);
+  
   const groupedTransactions = groupTransactionsByDate(filteredTransactions);
   const groupDates = Object.keys(groupedTransactions);
   
@@ -109,6 +127,22 @@ const TransactionList: React.FC<TransactionListProps> = ({
     }
     
     exportTransactionsToExcel(filteredTransactions, periodName);
+  };
+  
+  // Get appropriate label for total amount card
+  const getTotalAmountLabel = () => {
+    if (filter === 'expense') return 'Total Expenses';
+    if (filter === 'income') return 'Total Income';
+    if (filter === 'savings') return 'Total Savings';
+    return 'Balance';
+  };
+  
+  // Get appropriate color for total amount card
+  const getTotalAmountColor = () => {
+    if (filter === 'expense') return 'from-red-500/20 to-red-600/10 border-red-400/30 text-red-400';
+    if (filter === 'income') return 'from-green-500/20 to-green-600/10 border-green-400/30 text-green-400';
+    if (filter === 'savings') return 'from-blue-500/20 to-blue-600/10 border-blue-400/30 text-blue-400';
+    return 'from-neon-purple/20 to-neon-blue/10 border-neon-purple/30 text-white';
   };
   
   if (transactions.length === 0) {
@@ -316,6 +350,33 @@ const TransactionList: React.FC<TransactionListProps> = ({
             )}
           </div>
         </div>
+        
+        {/* New Total Amount Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mt-2"
+        >
+          <Card className={`p-0.5 bg-gradient-to-br ${getTotalAmountColor()} border rounded-lg shadow-lg`}>
+            <CardContent className="p-3 flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-3">
+                  <CalculatorIcon className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-white/70">{getTotalAmountLabel()}</p>
+                  <p className="text-sm font-semibold text-white">
+                    {formatCurrency(totalFilteredAmount)}
+                  </p>
+                </div>
+              </div>
+              <div className="text-2xs text-white/50">
+                {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
       
       {filteredTransactions.length === 0 ? (

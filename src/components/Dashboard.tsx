@@ -41,7 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
       animate={fadeIn.animate}
       transition={{ duration: 0.4, staggerChildren: 0.1 }}
     >
-      {/* Modern Finance Card */}
+      {/* Modern Finance Card - Updated with more distinguishable design */}
       <motion.div 
         className="card-3d"
         initial={slideUp.initial}
@@ -49,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="card-inner-3d">
-          <Card className="glass-card relative h-auto overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-purple-dark to-black/60">
+          <Card className="glass-card relative h-auto overflow-hidden border-2 border-neon-purple/30 shadow-2xl bg-gradient-to-br from-purple-dark/90 to-black/80 hover:border-neon-purple/50 transition-all duration-300">
             {/* Background decorative elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-neon-purple/20 rounded-full filter blur-xl"></div>
@@ -69,41 +69,41 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                     />
                   </div>
                 </div>
-                <div className="p-2 rounded-full bg-white/10 backdrop-blur-md">
-                  <CreditCard className="h-5 w-5 md:h-6 md:w-6 text-neon-purple" />
+                <div className="p-2.5 rounded-full bg-gradient-to-br from-neon-purple/30 to-neon-blue/20 backdrop-blur-md border border-white/10 shadow-lg">
+                  <CreditCard className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
               </div>
               
               {/* Main stats in single row with enhanced styling */}
-              <div className="grid grid-cols-3 gap-2 p-4 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-lg">
+              <div className="grid grid-cols-3 gap-2 p-4 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-xl border border-white/20 shadow-lg">
                 {/* Income */}
-                <div className="flex flex-col items-center p-2 rounded-lg bg-green-500/10 border border-green-400/20">
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center mb-2">
+                <div className="flex flex-col items-center p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-400/30">
+                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center mb-2 shadow-inner shadow-green-400/10">
                     <ArrowUp className="h-4 w-4 text-green-400" />
                   </div>
-                  <p className="text-2xs md:text-xs font-medium text-white/70">Income</p>
+                  <p className="text-2xs md:text-xs font-medium text-white/80">Income</p>
                   <p className="text-xs md:text-sm font-semibold text-green-400">
                     {formatCurrency(stats.totalIncome)}
                   </p>
                 </div>
                 
                 {/* Expenses */}
-                <div className="flex flex-col items-center p-2 rounded-lg bg-red-500/10 border border-red-400/20">
-                  <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center mb-2">
+                <div className="flex flex-col items-center p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-400/30">
+                  <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center mb-2 shadow-inner shadow-red-400/10">
                     <ArrowDown className="h-4 w-4 text-red-400" />
                   </div>
-                  <p className="text-2xs md:text-xs font-medium text-white/70">Expenses</p>
+                  <p className="text-2xs md:text-xs font-medium text-white/80">Expenses</p>
                   <p className="text-xs md:text-sm font-semibold text-red-400">
                     {formatCurrency(stats.totalExpenses)}
                   </p>
                 </div>
                 
                 {/* Savings */}
-                <div className="flex flex-col items-center p-2 rounded-lg bg-blue-500/10 border border-blue-400/20">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center mb-2">
+                <div className="flex flex-col items-center p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-400/30">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center mb-2 shadow-inner shadow-blue-400/10">
                     <PiggyBank className="h-4 w-4 text-blue-400" />
                   </div>
-                  <p className="text-2xs md:text-xs font-medium text-white/70">Savings</p>
+                  <p className="text-2xs md:text-xs font-medium text-white/80">Savings</p>
                   <p className="text-xs md:text-sm font-semibold text-blue-400">
                     {formatCurrency(stats.totalSavings)}
                   </p>
@@ -129,7 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         animate={slideUp.animate}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <Card className="glass-card overflow-hidden border-0 shadow-xl bg-gradient-to-br from-purple-dark/90 to-black/70">
+        <Card className="glass-card overflow-hidden border-2 border-neon-blue/20 shadow-xl bg-gradient-to-br from-purple-dark/90 to-black/80 hover:border-neon-blue/40 transition-all duration-300">
           <CardContent className="p-3 md:p-4">
             <ExpenseChart transactions={transactions} />
           </CardContent>

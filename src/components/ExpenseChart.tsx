@@ -268,8 +268,8 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
       const { name } = payload[0].payload;
       
       return (
-        <div className="bg-purple-dark/95 border border-neon-purple rounded-lg shadow-lg p-3">
-          <p className="text-white font-medium text-sm">{name}</p>
+        <div className="bg-purple-dark/95 border border-neon-purple/30 rounded-lg shadow-lg p-2.5 max-w-[200px]">
+          <p className="text-white font-medium text-xs mb-1.5">{name}</p>
           {payload.map((entry: any, index: number) => {
             // Skip the 'name' field which isn't a data point
             if (entry.dataKey === 'name') return null;
@@ -282,17 +282,22 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
             if (isCountField) return null;
             
             return (
-              <p 
+              <div 
                 key={`item-${index}`}
-                className="text-white font-bold text-base"
-                style={{ color: entry.color }}
+                className="flex justify-between items-center my-1"
               >
-                {entry.name}: {entry.dataKey.includes('Count') ? 
-                  `${entry.value} transactions` : 
-                  formatCurrency(entry.value)}
-                {count && !entry.dataKey.includes('Count') ? 
-                  ` (${count} transactions)` : ''}
-              </p>
+                <span className="text-2xs text-white/80">{entry.name}:</span>
+                <span className="text-xs font-semibold" style={{ color: entry.color }}>
+                  {entry.dataKey.includes('Count') ? 
+                    `${entry.value}` : 
+                    `रु ${entry.value.toLocaleString()}`}
+                </span>
+                {count && !entry.dataKey.includes('Count') && (
+                  <span className="block text-2xs text-white/60 mt-0.5">
+                    {count} transaction{count !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
             );
           })}
         </div>
@@ -312,7 +317,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   const showComparisonSelector = chartType === 'bar';
   
   // Get correct currency symbol
-  const getCurrencySymbol = () => "नेरू";
+  const getCurrencySymbol = () => "रु";
   
   return (
     <motion.div 
@@ -345,7 +350,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
         </motion.div>
       </div>
       
-      <div className="p-3 rounded-lg bg-gradient-to-br from-white/10 to-white/5 border border-white/10">
+      <div className="p-3 rounded-lg bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/10">
         <Tabs 
           value={dataType} 
           onValueChange={(value) => setDataType(value as any)}
@@ -493,9 +498,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
                   tickFormatter={(value) => {
                     if (value >= 1000) {
-                      return `${getCurrencySymbol()}${(value / 1000).toFixed(1)}k`;
+                      return `रु${(value / 1000).toFixed(1)}k`;
                     }
-                    return `${getCurrencySymbol()}${value}`;
+                    return `रु${value}`;
                   }}
                   domain={[0, 'dataMax + 500']}
                 />
@@ -537,9 +542,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
                   tickFormatter={(value) => {
                     if (value >= 1000) {
-                      return `${getCurrencySymbol()}${(value / 1000).toFixed(1)}k`;
+                      return `रु${(value / 1000).toFixed(1)}k`;
                     }
-                    return `${getCurrencySymbol()}${value}`;
+                    return `रु${value}`;
                   }}
                   domain={[0, 'dataMax + 500']}
                 />
@@ -581,9 +586,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
                   tickFormatter={(value) => {
                     if (value >= 1000) {
-                      return `${getCurrencySymbol()}${(value / 1000).toFixed(1)}k`;
+                      return `रु${(value / 1000).toFixed(1)}k`;
                     }
-                    return `${getCurrencySymbol()}${value}`;
+                    return `रु${value}`;
                   }}
                   domain={[0, 'dataMax + 500']}
                 />
