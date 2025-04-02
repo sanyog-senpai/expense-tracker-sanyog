@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTransactions } from '@/context/TransactionContext';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -25,9 +25,13 @@ const TransactionDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { state, deleteTransaction } = useTransactions();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  const transaction = state.transactions.find(t => t.id === id);
+  const transaction = useMemo(() => {
+    // Find the transaction in the current transactions array
+    return state.transactions.find(t => t.id === id);
+  }, [id, state.transactions]);
   
   // Calculate before and after balance
   const balanceInfo = useMemo(() => {
@@ -66,6 +70,18 @@ const TransactionDetail = () => {
     return { before: beforeBalance, after: afterBalance };
   }, [transaction, state.transactions]);
   
+  // If the transaction is not found, redirect to home
+  React.useEffect(() => {
+    if (!transaction && !state.loading) {
+      toast({
+        title: "Transaction not found",
+        description: "The transaction you're looking for doesn't exist or was deleted.",
+        variant: "destructive",
+      });
+      navigate('/');
+    }
+  }, [transaction, state.loading, navigate, toast]);
+  
   if (!transaction) {
     return (
       <Layout>
@@ -85,7 +101,7 @@ const TransactionDetail = () => {
       title: "Transaction deleted",
       description: "The transaction has been successfully deleted.",
     });
-    window.history.back();
+    navigate('/');
   };
   
   const categoryClass = getCategoryColor(transaction.category);
@@ -104,7 +120,7 @@ const TransactionDetail = () => {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => window.history.back()}
+            onClick={() => navigate('/')}
             className="text-white/70 hover:text-white hover:bg-white/10"
           >
             <ChevronLeft className="mr-1 h-4 w-4" />

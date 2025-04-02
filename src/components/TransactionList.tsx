@@ -36,7 +36,23 @@ const MONTHS = [
 const getCurrentYear = () => new Date().getFullYear();
 const getYearOptions = () => {
   const currentYear = getCurrentYear();
-  return ['All', currentYear.toString(), (currentYear - 1).toString(), (currentYear - 2).toString()];
+  const years = ['All'];
+  
+  // Add years from current year to 2035
+  for (let year = currentYear; year <= 2035; year++) {
+    years.push(year.toString());
+  }
+  
+  // Add past years
+  for (let year = currentYear - 1; year >= currentYear - 5; year--) {
+    years.push(year.toString());
+  }
+  
+  // Sort years in descending order (newest first), but keep 'All' at the front
+  return [
+    'All', 
+    ...years.filter(y => y !== 'All').sort((a, b) => Number(b) - Number(a))
+  ];
 };
 
 const TransactionList: React.FC<TransactionListProps> = ({ 
@@ -78,6 +94,16 @@ const TransactionList: React.FC<TransactionListProps> = ({
     return true;
   });
   
+  // Calculate summary statistics for filtered transactions
+  const summaryStats = useMemo(() => {
+    const income = filteredTransactions.filter(t => !t.isExpense).reduce((sum, t) => sum + t.amount, 0);
+    const expenses = filteredTransactions.filter(t => t.isExpense && !t.isSavings).reduce((sum, t) => sum + t.amount, 0);
+    const savings = filteredTransactions.filter(t => t.isSavings).reduce((sum, t) => sum + t.amount, 0);
+    const balance = income - expenses - savings;
+    
+    return { income, expenses, savings, balance };
+  }, [filteredTransactions]);
+  
   // Calculate the total amount of filtered transactions
   const totalFilteredAmount = useMemo(() => {
     if (filter === 'expense') {
@@ -88,12 +114,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
       return filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
     } else {
       // For 'all' filter, calculate total balance
-      const income = filteredTransactions.filter(t => !t.isExpense).reduce((sum, t) => sum + t.amount, 0);
-      const expenses = filteredTransactions.filter(t => t.isExpense && !t.isSavings).reduce((sum, t) => sum + t.amount, 0);
-      const savings = filteredTransactions.filter(t => t.isSavings).reduce((sum, t) => sum + t.amount, 0);
-      return income - expenses - savings;
+      return summaryStats.balance;
     }
-  }, [filteredTransactions, filter]);
+  }, [filteredTransactions, filter, summaryStats]);
   
   const groupedTransactions = groupTransactionsByDate(filteredTransactions);
   const groupDates = Object.keys(groupedTransactions);
@@ -370,35 +393,66 @@ const TransactionList: React.FC<TransactionListProps> = ({
           </div>
         </div>
         
-        {/* New Enhanced Total Amount Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mt-2"
-        >
-          <Card className={`overflow-hidden border-2 shadow-lg bg-gradient-to-br ${getTotalAmountColor()}`}>
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3 shadow-inner shadow-white/5">
-                  {getSummaryIcon()}
-                </div>
-                <div>
-                  <div className="flex items-center">
-                    <p className="text-xs text-white/80 font-medium">{getTotalAmountLabel()}</p>
-                    <span className="text-2xs text-white/50 ml-2 px-1.5 py-0.5 bg-white/10 rounded-full">{getFilterPeriod()}</span>
+        {/* Enhanced Summary Cards - Showing more complete stats */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Main Total Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className={`overflow-hidden border-2 shadow-lg bg-gradient-to-br ${getTotalAmountColor()}`}>
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3 shadow-inner shadow-white/5">
+                    {getSummaryIcon()}
                   </div>
-                  <p className="text-base md:text-lg font-semibold text-white mt-0.5">
-                    {formatCurrency(totalFilteredAmount)}
-                  </p>
+                  <div>
+                    <div className="flex items-center">
+                      <p className="text-xs text-white/80 font-medium">{getTotalAmountLabel()}</p>
+                      <span className="text-2xs text-white/50 ml-2 px-1.5 py-0.5 bg-white/10 rounded-full">{getFilterPeriod()}</span>
+                    </div>
+                    <p className="text-base md:text-lg font-semibold text-white mt-0.5">
+                      {formatCurrency(totalFilteredAmount)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="text-2xs text-white/60 bg-white/10 px-2 py-1 rounded-full">
-                {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+                <div className="text-2xs text-white/60 bg-white/10 px-2 py-1 rounded-full">
+                  {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Additional Stats Card - Only show when we're showing "All" */}
+          {filter === 'all' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <Card className="overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white/5 to-white/2 border-white/10">
+                <CardContent className="p-3">
+                  <h4 className="text-xs font-medium text-white/80 mb-2">Breakdown</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-2 rounded-md bg-green-500/10 border border-green-500/20">
+                      <p className="text-2xs text-white/60">Income</p>
+                      <p className="text-xs font-semibold text-green-400">{formatCurrency(summaryStats.income)}</p>
+                    </div>
+                    <div className="p-2 rounded-md bg-red-500/10 border border-red-500/20">
+                      <p className="text-2xs text-white/60">Expense</p>
+                      <p className="text-xs font-semibold text-red-400">{formatCurrency(summaryStats.expenses)}</p>
+                    </div>
+                    <div className="p-2 rounded-md bg-blue-500/10 border border-blue-500/20">
+                      <p className="text-2xs text-white/60">Savings</p>
+                      <p className="text-xs font-semibold text-blue-400">{formatCurrency(summaryStats.savings)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </div>
       </motion.div>
 
       {filteredTransactions.length === 0 ? (

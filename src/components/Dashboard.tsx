@@ -41,7 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
       animate={fadeIn.animate}
       transition={{ duration: 0.4, staggerChildren: 0.1 }}
     >
-      {/* Modern Finance Card - Updated with more distinguishable design */}
+      {/* Modern Finance Card - More distinguishable design with stronger borders and shadows */}
       <motion.div 
         className="card-3d"
         initial={slideUp.initial}
@@ -49,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="card-inner-3d">
-          <Card className="relative h-auto overflow-hidden border-2 border-neon-purple/40 shadow-2xl bg-gradient-to-br from-purple-dark/80 to-black/70 hover:border-neon-purple/60 transition-all duration-300">
+          <Card className="relative h-auto overflow-hidden border-3 border-neon-purple/60 shadow-2xl shadow-purple-700/20 bg-gradient-to-br from-purple-dark/90 to-black/80 hover:shadow-purple-700/30 hover:border-neon-purple/80 transition-all duration-300">
             {/* Background decorative elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-neon-purple/30 rounded-full filter blur-xl"></div>
@@ -129,7 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         animate={slideUp.animate}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <Card className="overflow-hidden border-2 border-neon-blue/30 shadow-xl bg-gradient-to-br from-[#1a1a2e] to-[#16213e] hover:border-neon-blue/50 transition-all duration-300">
+        <Card className="overflow-hidden border-3 border-neon-blue/50 shadow-xl shadow-blue-700/20 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] hover:shadow-blue-700/30 hover:border-neon-blue/70 transition-all duration-300">
           <CardContent className="p-3 md:p-4">
             <ExpenseChart transactions={transactions} />
           </CardContent>

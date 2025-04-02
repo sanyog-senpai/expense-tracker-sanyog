@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, ArrowDown, ArrowUp } from 'lucide-react';
+import { X, ArrowDown, ArrowUp, PiggyBank } from 'lucide-react';
 import { Category, Transaction } from '@/context/TransactionContext';
 import { motion } from 'framer-motion';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AddTransactionProps {
   isOpen: boolean;
@@ -75,8 +76,8 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-purple-dark border-white/10 p-0 max-w-lg mx-auto">
-        <div className="relative overflow-hidden">
+      <DialogContent className="bg-purple-dark border-white/10 p-0 max-w-lg mx-auto max-h-[90vh] overflow-hidden">
+        <div className="relative overflow-hidden h-full">
           {/* Background effects */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-neon-purple/10 rounded-full filter blur-3xl opacity-20"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-neon-blue/10 rounded-full filter blur-3xl opacity-20"></div>
@@ -98,194 +99,196 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
               </motion.button>
             </div>
             
-            <motion.form 
-              onSubmit={handleSubmit}
-              className="space-y-4 md:space-y-5"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="col-span-2">
-                  <Label htmlFor="description" className="text-white/70 mb-1.5 block text-xs">Description</Label>
+            <ScrollArea className="h-[calc(90vh-120px)]">
+              <motion.form 
+                onSubmit={handleSubmit}
+                className="space-y-4 md:space-y-5 pr-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div className="col-span-2">
+                    <Label htmlFor="description" className="text-white/70 mb-1.5 block text-xs">Description</Label>
+                    <Input
+                      id="description"
+                      placeholder="Enter description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="amount" className="text-white/70 mb-1.5 block text-xs">Amount</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">रु</span>
+                      <Input
+                        id="amount"
+                        type="number"
+                        placeholder="0.00"
+                        value={amount}
+                        onChange={(e) => setAmount(Number(e.target.value))}
+                        className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white pl-8 h-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="category" className="text-white/70 mb-1.5 block text-xs">Category</Label>
+                    <Select
+                      value={category}
+                      onValueChange={(value) => setCategory(value as any)}
+                    >
+                      <SelectTrigger 
+                        id="category"
+                        className="bg-white/5 border-white/10 text-white h-10 focus:ring-neon-purple/20 focus:ring-offset-0"
+                      >
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-purple-dark border-white/10">
+                        <SelectItem value="food">Food</SelectItem>
+                        <SelectItem value="transportation">Transportation</SelectItem>
+                        <SelectItem value="entertainment">Entertainment</SelectItem>
+                        <SelectItem value="shopping">Shopping</SelectItem>
+                        <SelectItem value="utilities">Utilities</SelectItem>
+                        <SelectItem value="health">Health</SelectItem>
+                        <SelectItem value="education">Education</SelectItem>
+                        <SelectItem value="travel">Travel</SelectItem>
+                        <SelectItem value="savings">Savings</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="date" className="text-white/70 mb-1.5 block text-xs">Date & Time</Label>
                   <Input
-                    id="description"
-                    placeholder="Enter description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    id="date"
+                    type="datetime-local"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
                     className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
                     required
                   />
                 </div>
                 
-                <div>
-                  <Label htmlFor="amount" className="text-white/70 mb-1.5 block text-xs">Amount</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">₹</span>
-                    <Input
-                      id="amount"
-                      type="number"
-                      placeholder="0.00"
-                      value={amount}
-                      onChange={(e) => setAmount(Number(e.target.value))}
-                      className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white pl-8 h-10"
-                      required
-                    />
+                <div className="bg-white/5 rounded-lg p-3 md:p-4 space-y-2">
+                  <h4 className="text-xs font-medium text-white/80">Transaction Type</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => { setIsExpense(true); setIsSavings(false); }}
+                    >
+                      <div className={`rounded-lg border p-3 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                        isExpense && !isSavings 
+                          ? "border-red-500/50 bg-red-500/10" 
+                          : "border-white/10 bg-white/5 hover:bg-white/10"
+                      }`}>
+                        <ArrowDown className={`h-6 w-6 mb-1 ${isExpense && !isSavings ? "text-red-400" : "text-white/60"}`} />
+                        <span className={`text-xs font-medium ${isExpense && !isSavings ? "text-red-400" : "text-white/70"}`}>Expense</span>
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => { setIsExpense(false); setIsSavings(false); }}
+                    >
+                      <div className={`rounded-lg border p-3 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                        !isExpense && !isSavings 
+                          ? "border-green-500/50 bg-green-500/10" 
+                          : "border-white/10 bg-white/5 hover:bg-white/10"
+                      }`}>
+                        <ArrowUp className={`h-6 w-6 mb-1 ${!isExpense && !isSavings ? "text-green-400" : "text-white/60"}`} />
+                        <span className={`text-xs font-medium ${!isExpense && !isSavings ? "text-green-400" : "text-white/70"}`}>Income</span>
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
                 
-                <div>
-                  <Label htmlFor="category" className="text-white/70 mb-1.5 block text-xs">Category</Label>
-                  <Select
-                    value={category}
-                    onValueChange={(value) => setCategory(value as any)}
-                  >
-                    <SelectTrigger 
-                      id="category"
-                      className="bg-white/5 border-white/10 text-white h-10 focus:ring-neon-purple/20 focus:ring-offset-0"
-                    >
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-purple-dark border-white/10">
-                      <SelectItem value="food">Food</SelectItem>
-                      <SelectItem value="transportation">Transportation</SelectItem>
-                      <SelectItem value="entertainment">Entertainment</SelectItem>
-                      <SelectItem value="shopping">Shopping</SelectItem>
-                      <SelectItem value="utilities">Utilities</SelectItem>
-                      <SelectItem value="health">Health</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="travel">Travel</SelectItem>
-                      <SelectItem value="savings">Savings</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="savings"
+                    checked={isSavings}
+                    onCheckedChange={(checked) => {
+                      setIsSavings(checked);
+                      if (checked) {
+                        setIsExpense(true);
+                        if (category !== 'savings') {
+                          setCategory('savings');
+                        }
+                      }
+                    }}
+                    className="data-[state=checked]:bg-blue-500"
+                  />
+                  <Label htmlFor="savings" className="text-white/70 text-xs cursor-pointer">Mark as Savings</Label>
                 </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="date" className="text-white/70 mb-1.5 block text-xs">Date & Time</Label>
-                <Input
-                  id="date"
-                  type="datetime-local"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
-                  required
-                />
-              </div>
-              
-              <div className="bg-white/5 rounded-lg p-3 md:p-4 space-y-2">
-                <h4 className="text-xs font-medium text-white/80">Transaction Type</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => { setIsExpense(true); setIsSavings(false); }}
+                
+                {isSavings && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <div className={`rounded-lg border p-3 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                      isExpense && !isSavings 
-                        ? "border-red-500/50 bg-red-500/10" 
-                        : "border-white/10 bg-white/5 hover:bg-white/10"
-                    }`}>
-                      <ArrowDown className={`h-6 w-6 mb-1 ${isExpense && !isSavings ? "text-red-400" : "text-white/60"}`} />
-                      <span className={`text-xs font-medium ${isExpense && !isSavings ? "text-red-400" : "text-white/70"}`}>Expense</span>
-                    </div>
+                    <Label htmlFor="savingsPurpose" className="text-white/70 mb-1.5 block text-xs">Savings Purpose</Label>
+                    <Input
+                      id="savingsPurpose"
+                      placeholder="e.g., Emergency Fund, Vacation"
+                      value={savingsPurpose}
+                      onChange={(e) => setSavingsPurpose(e.target.value)}
+                      className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
+                    />
+                  </motion.div>
+                )}
+                
+                <div>
+                  <Label htmlFor="remarks" className="text-white/70 mb-1.5 block text-xs">Notes (Optional)</Label>
+                  <Textarea
+                    id="remarks"
+                    placeholder="Add any additional notes"
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white min-h-[80px]"
+                  />
+                </div>
+                
+                <div className="flex justify-end gap-3 pt-2 pb-4">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={onClose}
+                      className="border-white/10 text-white/70 hover:bg-white/5 hover:text-white"
+                    >
+                      Cancel
+                    </Button>
                   </motion.div>
                   
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => { setIsExpense(false); setIsSavings(false); }}
-                  >
-                    <div className={`rounded-lg border p-3 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                      !isExpense && !isSavings 
-                        ? "border-green-500/50 bg-green-500/10" 
-                        : "border-white/10 bg-white/5 hover:bg-white/10"
-                    }`}>
-                      <ArrowUp className={`h-6 w-6 mb-1 ${!isExpense && !isSavings ? "text-green-400" : "text-white/60"}`} />
-                      <span className={`text-xs font-medium ${!isExpense && !isSavings ? "text-green-400" : "text-white/70"}`}>Income</span>
-                    </div>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button
+                      type="submit"
+                      className={`${
+                        editTransaction 
+                          ? "bg-neon-purple hover:bg-neon-purple/90" 
+                          : isSavings 
+                            ? "bg-blue-500 hover:bg-blue-600" 
+                            : isExpense 
+                              ? "bg-red-500 hover:bg-red-600" 
+                              : "bg-green-500 hover:bg-green-600"
+                      } text-white`}
+                    >
+                      {editTransaction ? "Update" : "Add"} Transaction
+                    </Button>
                   </motion.div>
                 </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="savings"
-                  checked={isSavings}
-                  onCheckedChange={(checked) => {
-                    setIsSavings(checked);
-                    if (checked) {
-                      setIsExpense(true);
-                      if (category !== 'savings') {
-                        setCategory('savings');
-                      }
-                    }
-                  }}
-                  className="data-[state=checked]:bg-blue-500"
-                />
-                <Label htmlFor="savings" className="text-white/70 text-xs cursor-pointer">Mark as Savings</Label>
-              </div>
-              
-              {isSavings && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Label htmlFor="savingsPurpose" className="text-white/70 mb-1.5 block text-xs">Savings Purpose</Label>
-                  <Input
-                    id="savingsPurpose"
-                    placeholder="e.g., Emergency Fund, Vacation"
-                    value={savingsPurpose}
-                    onChange={(e) => setSavingsPurpose(e.target.value)}
-                    className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
-                  />
-                </motion.div>
-              )}
-              
-              <div>
-                <Label htmlFor="remarks" className="text-white/70 mb-1.5 block text-xs">Notes (Optional)</Label>
-                <Textarea
-                  id="remarks"
-                  placeholder="Add any additional notes"
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white min-h-[80px]"
-                />
-              </div>
-              
-              <div className="flex justify-end gap-3 pt-2">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onClose}
-                    className="border-white/10 text-white/70 hover:bg-white/5 hover:text-white"
-                  >
-                    Cancel
-                  </Button>
-                </motion.div>
-                
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="submit"
-                    className={`${
-                      editTransaction 
-                        ? "bg-neon-purple hover:bg-neon-purple/90" 
-                        : isSavings 
-                          ? "bg-blue-500 hover:bg-blue-600" 
-                          : isExpense 
-                            ? "bg-red-500 hover:bg-red-600" 
-                            : "bg-green-500 hover:bg-green-600"
-                    } text-white`}
-                  >
-                    {editTransaction ? "Update" : "Add"} Transaction
-                  </Button>
-                </motion.div>
-              </div>
-            </motion.form>
+              </motion.form>
+            </ScrollArea>
           </div>
         </div>
       </DialogContent>

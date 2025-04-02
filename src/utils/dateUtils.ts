@@ -1,4 +1,3 @@
-
 import { format, parseISO, isToday, isYesterday, isThisWeek, isThisMonth, isThisYear } from 'date-fns';
 
 export const formatCurrency = (amount: number): string => {
@@ -7,7 +6,7 @@ export const formatCurrency = (amount: number): string => {
     currency: 'NPR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
-  }).format(amount);
+  }).format(amount).replace('₨', 'रु');
 };
 
 export const formatDate = (dateString: string): string => {
