@@ -1,4 +1,3 @@
-
 import {
   BookOpen,
   Book,
@@ -20,6 +19,7 @@ import {
   Trees,
   Wallet,
 } from "lucide-react";
+import React from "react"; // Add import for React
 
 // Function to format currency
 export const formatCurrency = (amount: number): string => {
@@ -73,29 +73,29 @@ export const getCategoryColor = (category: string): string => {
   }
 };
 
-// Category icons
-export const getCategoryIcon = (category: string): any => {
+// Category icons - Fixed to return React elements instead of component classes
+export const getCategoryIcon = (category: string): React.ReactNode => {
   switch (category) {
     case "food":
-      return Pizza;
+      return <Pizza size={16} />;
     case "transportation":
-      return Bus;
+      return <Bus size={16} />;
     case "entertainment":
-      return Gamepad2;
+      return <Gamepad2 size={16} />;
     case "shopping":
-      return ShoppingCart;
+      return <ShoppingCart size={16} />;
     case "utilities":
-      return Lightbulb;
+      return <Lightbulb size={16} />;
     case "health":
-      return HeartPulse;
+      return <HeartPulse size={16} />;
     case "education":
-      return GraduationCap;
+      return <GraduationCap size={16} />;
     case "travel":
-      return Trees;
+      return <Trees size={16} />;
     case "savings":
-      return Wallet; // Replaced Bank with Wallet
+      return <Wallet size={16} />; // Replaced Bank with Wallet
     default:
-      return IndianRupee;
+      return <IndianRupee size={16} />;
   }
 };
 
