@@ -1,11 +1,11 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTransactions, Transaction } from '@/context/TransactionContext';
 import { formatCurrency, formatDate, formatTime, getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeft, Calendar, Clock, Edit, Trash2 } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock, Edit, Trash2, ArrowDown, ArrowUp, PiggyBank } from 'lucide-react';
 import CategoryPill from '@/components/CategoryPill';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import AddTransaction from '@/components/AddTransaction';
@@ -17,11 +17,48 @@ const TransactionDetail = () => {
   const { state, updateTransaction, deleteTransaction } = useTransactions();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   const transaction = useMemo(() => {
     return state.transactions.find(t => t.id === id);
   }, [id, state.transactions]);
+  
+  // Calculate the balances before and after this transaction
+  const balanceDetails = useMemo(() => {
+    if (!transaction) return { beforeBalance: 0, afterBalance: 0 };
+    
+    // Sort transactions by date (newest first to get chronological order)
+    const sortedTransactions = [...state.transactions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    // Find the index of the current transaction
+    const transactionIndex = sortedTransactions.findIndex(t => t.id === id);
+    
+    if (transactionIndex === -1) return { beforeBalance: 0, afterBalance: 0 };
+    
+    // Calculate balance before this transaction (all transactions before this one)
+    let beforeBalance = 0;
+    for (let i = 0; i < transactionIndex; i++) {
+      const t = sortedTransactions[i];
+      if (!t.isExpense) {
+        beforeBalance += t.amount; // Income adds to balance
+      } else {
+        beforeBalance -= t.amount; // Expense or savings reduces balance
+      }
+    }
+    
+    // Calculate balance after this transaction (including this one)
+    let afterBalance = beforeBalance;
+    const t = transaction;
+    if (!t.isExpense) {
+      afterBalance += t.amount; // Income adds to balance
+    } else {
+      afterBalance -= t.amount; // Expense or savings reduces balance
+    }
+    
+    return { beforeBalance, afterBalance };
+  }, [transaction, state.transactions, id]);
   
   const handleDelete = () => {
     if (id) {
@@ -107,6 +144,11 @@ const TransactionDetail = () => {
     return 'Income';
   };
   
+  const getBalanceChangeIcon = () => {
+    if (transaction.isSavings || transaction.isExpense) return <ArrowDown className="h-4 w-4 text-red-400" />;
+    return <ArrowUp className="h-4 w-4 text-green-400" />;
+  };
+  
   return (
     <div className="min-h-screen bg-purple-dark p-4 md:p-6">
       <div className="max-w-lg mx-auto">
@@ -134,6 +176,7 @@ const TransactionDetail = () => {
             <div className={`${getBgColor()} p-6 md:p-8`}>
               <div className="flex justify-between items-start mb-4">
                 <CategoryPill category={transaction.category} />
+                
                 <div className="flex space-x-2">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
@@ -214,6 +257,27 @@ const TransactionDetail = () => {
                     <p className="text-blue-300 text-sm font-medium">{transaction.savingsPurpose}</p>
                   </div>
                 )}
+              </div>
+              
+              {/* Balance Before & After Section */}
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
+                  <p className="text-white/50 text-2xs mb-1">Balance Before</p>
+                  <p className="text-white/90 text-sm font-semibold">{formatCurrency(balanceDetails.beforeBalance)}</p>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
+                  <p className="text-white/50 text-2xs mb-1">Balance After</p>
+                  <div className="flex items-center">
+                    <p className="text-white/90 text-sm font-semibold">{formatCurrency(balanceDetails.afterBalance)}</p>
+                    <div className="flex items-center ml-2 text-2xs px-1.5 py-0.5 bg-white/5 rounded-full">
+                      {getBalanceChangeIcon()}
+                      <span className={`ml-0.5 ${getTextColor()}`}>
+                        {formatCurrency(Math.abs(balanceDetails.afterBalance - balanceDetails.beforeBalance))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             

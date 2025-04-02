@@ -75,29 +75,6 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 </div>
               </div>
               
-              {/* Financial Summary Pills */}
-              <div className="mb-4 flex flex-wrap gap-2">
-                <Badge className="bg-white/10 text-white hover:bg-white/15 px-2 py-1">
-                  <CircleDollarSign className="h-3 w-3 mr-1" />
-                  <span className="text-2xs">Financial Summary</span>
-                </Badge>
-                
-                <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/30 px-2 py-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  <span className="text-2xs">Income: {formatCurrency(stats.totalIncome)}</span>
-                </Badge>
-                
-                <Badge className="bg-red-500/20 text-red-400 hover:bg-red-500/30 px-2 py-1">
-                  <ArrowDown className="h-3 w-3 mr-1" />
-                  <span className="text-2xs">Expense: {formatCurrency(stats.totalExpenses)}</span>
-                </Badge>
-                
-                <Badge className="bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 px-2 py-1">
-                  <PiggyBank className="h-3 w-3 mr-1" />
-                  <span className="text-2xs">Savings: {formatCurrency(stats.totalSavings)}</span>
-                </Badge>
-              </div>
-              
               {/* Main stats in single row with enhanced styling */}
               <div className="grid grid-cols-3 gap-2 p-4 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-xl border border-white/20 shadow-lg">
                 {/* Income */}

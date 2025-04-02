@@ -1,47 +1,44 @@
 
 import React, { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 import FloatingNavigation from './FloatingNavigation';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutProps {
   children: ReactNode;
-  className?: string;
-  hideNavigation?: boolean;
   onAddClick?: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  className, 
-  hideNavigation = false,
-  onAddClick
-}) => {
-  const isMobile = useIsMobile();
-  
+const Layout: React.FC<LayoutProps> = ({ children, onAddClick }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-dark via-background to-background overflow-hidden relative">
-      {/* Background decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <div className="absolute top-10 left-10 w-60 h-60 bg-neon-purple/10 rounded-full filter blur-3xl opacity-50"></div>
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-neon-blue/10 rounded-full filter blur-3xl opacity-50"></div>
-        <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-neon-pink/10 rounded-full filter blur-3xl opacity-30"></div>
+    <div className="min-h-screen bg-purple-dark text-white overflow-x-hidden relative pb-24">
+      <div className="max-w-3xl mx-auto px-4 pt-6 pb-20">
+        {children}
       </div>
-      
-      {/* Main content */}
-      <div className="relative z-10">
-        <div 
-          className={cn(
-            "container max-w-2xl mx-auto px-3 md:px-4 py-4 md:py-6 space-y-4 md:space-y-6 pb-24", // Adjusted padding for mobile
-            className
-          )}
+
+      {/* Categories button (fixed on the left) */}
+      <Link to="/categories">
+        <motion.div
+          className="fixed left-4 bottom-28 md:bottom-28 z-50"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          {children}
-        </div>
-      </div>
+          <Button 
+            className="bg-white/10 hover:bg-white/20 text-white border border-white/10"
+          >
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+              <path d="M1.5 5h4V1.5h-4V5z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M9.5 5h4V1.5h-4V5z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 13h4V9.5h-4V13z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M9.5 13h4V9.5h-4V13z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Categories
+          </Button>
+        </motion.div>
+      </Link>
       
-      {/* Floating navigation */}
-      {!hideNavigation && <FloatingNavigation onAddClick={onAddClick} />}
+      <FloatingNavigation onAddClick={onAddClick} />
     </div>
   );
 };
