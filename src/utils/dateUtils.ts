@@ -1,5 +1,6 @@
+
 import {
-  Bank,
+  BookOpen,
   Book,
   Bus,
   CalendarClock,
@@ -17,6 +18,7 @@ import {
   ShoppingCart,
   Ticket,
   Trees,
+  Wallet,
 } from "lucide-react";
 
 // Function to format currency
@@ -91,7 +93,7 @@ export const getCategoryIcon = (category: string): any => {
     case "travel":
       return Trees;
     case "savings":
-      return Bank;
+      return Wallet; // Replaced Bank with Wallet
     default:
       return IndianRupee;
   }
@@ -113,4 +115,33 @@ export const getCurrentDateInNepalTime = (): string => {
   
   // Format to ISO string and return the date part
   return nepalTime.toISOString();
+};
+
+// Group transactions by date for display in TransactionList
+export const groupTransactionsByDate = (transactions: any[]): Record<string, any[]> => {
+  const grouped: Record<string, any[]> = {};
+  
+  transactions.forEach(transaction => {
+    const date = new Date(transaction.date);
+    const formattedDate = date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    if (!grouped[formattedDate]) {
+      grouped[formattedDate] = [];
+    }
+    
+    grouped[formattedDate].push(transaction);
+  });
+  
+  // Sort dates newest first
+  return Object.keys(grouped)
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+    .reduce((result: Record<string, any[]>, key) => {
+      result[key] = grouped[key];
+      return result;
+    }, {});
 };
