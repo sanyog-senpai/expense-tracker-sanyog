@@ -7,9 +7,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface CategoryPillProps {
   category: string;
   className?: string;
+  small?: boolean;
 }
 
-const CategoryPill: React.FC<CategoryPillProps> = ({ category, className }) => {
+const CategoryPill: React.FC<CategoryPillProps> = ({ category, className, small }) => {
   const colorClass = getCategoryColor(category);
   const isMobile = useIsMobile();
   
@@ -35,11 +36,17 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, className }) => {
     return capitalized;
   };
   
+  // Apply smaller text and padding if small prop is true
+  const sizeClasses = small
+    ? 'text-3xs md:text-2xs py-0 md:py-0.5 px-1 md:px-1.5'
+    : 'text-2xs md:text-xs py-0.5 md:py-1 px-1.5 md:px-2.5';
+  
   return (
     <div 
       className={cn(
         neoBgColor,
-        'text-2xs md:text-xs font-medium py-0.5 md:py-1 px-1.5 md:px-2.5 rounded-full neon-border',
+        sizeClasses,
+        'font-medium rounded-full neon-border',
         'backdrop-blur-sm whitespace-nowrap',
         className
       )}
