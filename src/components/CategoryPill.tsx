@@ -45,7 +45,7 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, className, small,
   }
   
   if (extraSmall) {
-    sizeClasses = 'text-3xs py-0 px-1 leading-tight';
+    sizeClasses = 'text-3xs py-0 px-0.5 leading-tight';
   }
   
   return (
@@ -53,7 +53,7 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, className, small,
       className={cn(
         neoBgColor,
         sizeClasses,
-        'font-medium rounded-full neon-border',
+        'font-medium rounded-full',
         'backdrop-blur-sm whitespace-nowrap',
         className
       )}

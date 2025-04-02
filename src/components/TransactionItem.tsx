@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Transaction } from '@/context/TransactionContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency, formatTime, getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
-import { Wallet } from 'lucide-react'; // Changed from PiggyBank to Wallet
+import { Wallet } from 'lucide-react'; 
 import { motion } from 'framer-motion';
 import CategoryPill from './CategoryPill';
 
@@ -16,7 +16,8 @@ interface TransactionItemProps {
 }
 
 const TransactionItem: React.FC<TransactionItemProps> = ({ 
-  transaction
+  transaction,
+  actionContent
 }) => {
   // Determine card styling based on transaction type
   const getCardBorder = () => {
@@ -60,14 +61,14 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                   <h3 className="text-white font-medium text-sm truncate mr-2">{transaction.description}</h3>
                   {transaction.isSavings && (
                     <div className="bg-blue-500/20 rounded-full px-1 py-0.5 flex items-center">
-                      <Wallet className="h-2.5 w-2.5 text-blue-400 mr-0.5" /> {/* Changed from PiggyBank to Wallet */}
+                      <Wallet className="h-2 w-2 text-blue-400 mr-0.5" />
                       <span className="text-3xs text-blue-400">Savings</span>
                     </div>
                   )}
                 </div>
                 <div className="flex items-center mt-0.5">
                   <p className="text-white/60 text-3xs">{formatTime(transaction.date)}</p>
-                  <CategoryPill category={transaction.category} extraSmall className="ml-2" />
+                  <CategoryPill category={transaction.category} extraSmall className="ml-1.5" />
                 </div>
               </div>
               
@@ -77,6 +78,13 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                   {getAmountPrefix()}{formatCurrency(transaction.amount)}
                 </p>
               </div>
+              
+              {/* Action buttons if provided */}
+              {actionContent && (
+                <div className="flex-shrink-0 ml-2">
+                  {actionContent}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

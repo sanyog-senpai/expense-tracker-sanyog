@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import { formatCurrency } from '@/utils/dateUtils';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, CreditCard } from 'lucide-react';
+import { Wallet, CreditCard, TrendingUp, ArrowDown, ArrowUp, PiggyBank } from 'lucide-react';
 import AnimatedNumber from './AnimatedNumber';
 import ExpenseChart from './ExpenseChart';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -41,7 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
       animate={fadeIn.animate}
       transition={{ duration: 0.4, staggerChildren: 0.1 }}
     >
-      {/* Modern Finance Card */}
+      {/* Main Financial Card */}
       <motion.div 
         className="card-3d"
         initial={slideUp.initial}
@@ -74,8 +74,35 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 </div>
               </div>
               
+              {/* Financial Summary Cards */}
+              <div className="grid grid-cols-3 gap-2 mt-4 mb-3">
+                <div className="bg-green-500/20 backdrop-blur-sm rounded-lg p-2 border border-green-500/30">
+                  <div className="flex items-center mb-1">
+                    <ArrowUp className="w-3 h-3 text-green-400 mr-1" />
+                    <span className="text-2xs text-white/80">Income</span>
+                  </div>
+                  <p className="text-xs font-semibold text-green-400">{formatCurrency(stats.totalIncome)}</p>
+                </div>
+                
+                <div className="bg-red-500/20 backdrop-blur-sm rounded-lg p-2 border border-red-500/30">
+                  <div className="flex items-center mb-1">
+                    <ArrowDown className="w-3 h-3 text-red-400 mr-1" />
+                    <span className="text-2xs text-white/80">Expense</span>
+                  </div>
+                  <p className="text-xs font-semibold text-red-400">{formatCurrency(stats.totalExpenses)}</p>
+                </div>
+                
+                <div className="bg-blue-500/20 backdrop-blur-sm rounded-lg p-2 border border-blue-500/30">
+                  <div className="flex items-center mb-1">
+                    <PiggyBank className="w-3 h-3 text-blue-400 mr-1" />
+                    <span className="text-2xs text-white/80">Savings</span>
+                  </div>
+                  <p className="text-xs font-semibold text-blue-400">{formatCurrency(stats.totalSavings)}</p>
+                </div>
+              </div>
+              
               {/* Card footer */}
-              <div className="mt-4 flex justify-between items-center">
+              <div className="mt-2 flex justify-between items-center">
                 <div className="flex items-center">
                   <Wallet className="h-3.5 w-3.5 text-white/50 mr-1.5" />
                   <span className="text-2xs text-white/50">FinTrack</span>

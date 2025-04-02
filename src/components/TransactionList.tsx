@@ -10,7 +10,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter, 
   Calendar, Download, FileDown, FileSpreadsheet, CalculatorIcon,
-  TrendingUp, CircleDollarSign
+  TrendingUp, CircleDollarSign, Coffee, Car, Home, Gamepad2, 
+  ShoppingCart, PlusCircle
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
