@@ -1,3 +1,4 @@
+
 import {
   BookOpen,
   Book,
@@ -74,28 +75,28 @@ export const getCategoryColor = (category: string): string => {
 };
 
 // Category icons - Fixed to return React elements instead of component classes
-export const getCategoryIcon = (category: string): React.ReactNode => {
+export const getCategoryIcon = (category: string): React.ReactElement => {
   switch (category) {
     case "food":
-      return <Pizza size={16} />;
+      return React.createElement(Pizza, { size: 16 });
     case "transportation":
-      return <Bus size={16} />;
+      return React.createElement(Bus, { size: 16 });
     case "entertainment":
-      return <Gamepad2 size={16} />;
+      return React.createElement(Gamepad2, { size: 16 });
     case "shopping":
-      return <ShoppingCart size={16} />;
+      return React.createElement(ShoppingCart, { size: 16 });
     case "utilities":
-      return <Lightbulb size={16} />;
+      return React.createElement(Lightbulb, { size: 16 });
     case "health":
-      return <HeartPulse size={16} />;
+      return React.createElement(HeartPulse, { size: 16 });
     case "education":
-      return <GraduationCap size={16} />;
+      return React.createElement(GraduationCap, { size: 16 });
     case "travel":
-      return <Trees size={16} />;
+      return React.createElement(Trees, { size: 16 });
     case "savings":
-      return <Wallet size={16} />; // Replaced Bank with Wallet
+      return React.createElement(Wallet, { size: 16 }); // Replaced Bank with Wallet
     default:
-      return <IndianRupee size={16} />;
+      return React.createElement(IndianRupee, { size: 16 });
   }
 };
 
