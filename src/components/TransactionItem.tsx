@@ -50,7 +50,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
           <CardContent className="p-0">
             <div className="flex items-center px-3 py-2.5 md:px-4 w-full">
               {/* Category icon */}
-              <div className={`flex-shrink-0 w-9 h-9 ${getCategoryColor(transaction.category)} bg-opacity-20 rounded-full flex items-center justify-center mr-3`}>
+              <div className={`flex-shrink-0 w-8 h-8 ${getCategoryColor(transaction.category)} bg-opacity-20 rounded-full flex items-center justify-center mr-3`}>
                 <span className="text-lg">{getCategoryIcon(transaction.category)}</span>
               </div>
               
@@ -59,15 +59,15 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                 <div className="flex items-center">
                   <h3 className="text-white font-medium text-sm truncate mr-2">{transaction.description}</h3>
                   {transaction.isSavings && (
-                    <div className="bg-blue-500/20 rounded-full px-1.5 py-0.5 flex items-center">
-                      <PiggyBank className="h-3 w-3 text-blue-400 mr-0.5" />
-                      <span className="text-2xs text-blue-400">Savings</span>
+                    <div className="bg-blue-500/20 rounded-full px-1 py-0.5 flex items-center">
+                      <PiggyBank className="h-2.5 w-2.5 text-blue-400 mr-0.5" />
+                      <span className="text-3xs text-blue-400">Savings</span>
                     </div>
                   )}
                 </div>
                 <div className="flex items-center mt-0.5">
-                  <p className="text-white/60 text-xs">{formatTime(transaction.date)}</p>
-                  <CategoryPill category={transaction.category} small className="ml-2" />
+                  <p className="text-white/60 text-3xs">{formatTime(transaction.date)}</p>
+                  <CategoryPill category={transaction.category} extraSmall className="ml-2" />
                 </div>
               </div>
               

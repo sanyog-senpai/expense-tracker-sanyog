@@ -3,13 +3,12 @@ import React, { useMemo } from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import { formatCurrency } from '@/utils/dateUtils';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowDown, ArrowUp, Wallet, CreditCard, PiggyBank, CircleDollarSign, TrendingUp } from 'lucide-react';
+import { Wallet, CreditCard } from 'lucide-react';
 import AnimatedNumber from './AnimatedNumber';
 import ExpenseChart from './ExpenseChart';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { fadeIn, slideUp } from '@/lib/animations';
-import { Badge } from '@/components/ui/badge';
 
 interface DashboardProps {
   transactions: Transaction[];
@@ -42,7 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
       animate={fadeIn.animate}
       transition={{ duration: 0.4, staggerChildren: 0.1 }}
     >
-      {/* Modern Finance Card - More distinguishable design with stronger borders and shadows */}
+      {/* Modern Finance Card */}
       <motion.div 
         className="card-3d"
         initial={slideUp.initial}
@@ -75,42 +74,6 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 </div>
               </div>
               
-              {/* Main stats in single row with enhanced styling */}
-              <div className="grid grid-cols-3 gap-2 p-4 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md rounded-xl border border-white/20 shadow-lg">
-                {/* Income */}
-                <div className="flex flex-col items-center p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-400/30">
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center mb-2 shadow-inner shadow-green-400/10">
-                    <ArrowUp className="h-4 w-4 text-green-400" />
-                  </div>
-                  <p className="text-2xs md:text-xs font-medium text-white/80">Income</p>
-                  <p className="text-xs md:text-sm font-semibold text-green-400">
-                    {formatCurrency(stats.totalIncome)}
-                  </p>
-                </div>
-                
-                {/* Expenses */}
-                <div className="flex flex-col items-center p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-400/30">
-                  <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center mb-2 shadow-inner shadow-red-400/10">
-                    <ArrowDown className="h-4 w-4 text-red-400" />
-                  </div>
-                  <p className="text-2xs md:text-xs font-medium text-white/80">Expenses</p>
-                  <p className="text-xs md:text-sm font-semibold text-red-400">
-                    {formatCurrency(stats.totalExpenses)}
-                  </p>
-                </div>
-                
-                {/* Savings */}
-                <div className="flex flex-col items-center p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-400/30">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center mb-2 shadow-inner shadow-blue-400/10">
-                    <PiggyBank className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <p className="text-2xs md:text-xs font-medium text-white/80">Savings</p>
-                  <p className="text-xs md:text-sm font-semibold text-blue-400">
-                    {formatCurrency(stats.totalSavings)}
-                  </p>
-                </div>
-              </div>
-              
               {/* Card footer */}
               <div className="mt-4 flex justify-between items-center">
                 <div className="flex items-center">
@@ -124,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
         </div>
       </motion.div>
       
-      {/* Chart Section - Enhanced styling with distinct outer card */}
+      {/* Chart Section */}
       <motion.div
         initial={slideUp.initial}
         animate={slideUp.animate}

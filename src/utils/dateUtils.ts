@@ -1,88 +1,116 @@
+import {
+  Bank,
+  Book,
+  Bus,
+  CalendarClock,
+  Car,
+  Coffee,
+  Gamepad2,
+  Github,
+  GraduationCap,
+  HeartPulse,
+  Home,
+  IndianRupee,
+  Lightbulb,
+  MonitorSmartphone,
+  Pizza,
+  ShoppingCart,
+  Ticket,
+  Trees,
+} from "lucide-react";
 
-import { format, parseISO, isToday, isYesterday, isThisWeek, isThisMonth, isThisYear } from 'date-fns';
-
+// Function to format currency
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('ne-NP', {
-    style: 'currency',
-    currency: 'NPR',
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount).replace('₨', 'रु');
+  }).format(amount);
 };
 
-export const formatDate = (dateString: string): string => {
-  const date = parseISO(dateString);
-  if (isToday(date)) {
-    return 'Today';
-  } else if (isYesterday(date)) {
-    return 'Yesterday';
-  } else if (isThisWeek(date)) {
-    return format(date, 'EEEE'); // Day name
-  } else if (isThisMonth(date)) {
-    return format(date, 'MMMM d'); // Month day
-  } else if (isThisYear(date)) {
-    return format(date, 'MMMM d'); // Month day
-  } else {
-    return format(date, 'MMM d, yyyy'); // Month day, year
+// Function to format date
+export const formatDate = (date: string): string => {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+// Function to format time
+export const formatTime = (date: string): string => {
+  return new Date(date).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// Category colors
+export const getCategoryColor = (category: string): string => {
+  switch (category) {
+    case "food":
+      return "bg-red-500";
+    case "transportation":
+      return "bg-blue-500";
+    case "entertainment":
+      return "bg-purple-500";
+    case "shopping":
+      return "bg-yellow-500";
+    case "utilities":
+      return "bg-gray-500";
+    case "health":
+      return "bg-pink-500";
+    case "education":
+      return "bg-orange-500";
+    case "travel":
+      return "bg-teal-500";
+    case "savings":
+      return "bg-blue-600";
+    default:
+      return "bg-indigo-500";
   }
 };
 
-export const formatTime = (dateString: string): string => {
-  const date = parseISO(dateString);
-  return format(date, 'h:mm a');
+// Category icons
+export const getCategoryIcon = (category: string): any => {
+  switch (category) {
+    case "food":
+      return Pizza;
+    case "transportation":
+      return Bus;
+    case "entertainment":
+      return Gamepad2;
+    case "shopping":
+      return ShoppingCart;
+    case "utilities":
+      return Lightbulb;
+    case "health":
+      return HeartPulse;
+    case "education":
+      return GraduationCap;
+    case "travel":
+      return Trees;
+    case "savings":
+      return Bank;
+    default:
+      return IndianRupee;
+  }
 };
 
-export const groupTransactionsByDate = (transactions: any[]) => {
-  const groups: Record<string, any[]> = {};
+// Function to get current date in Nepal time
+export const getCurrentDateInNepalTime = (): string => {
+  const now = new Date();
   
-  transactions.forEach(transaction => {
-    const date = formatDate(transaction.date);
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(transaction);
-  });
+  // Nepal is UTC+5:45
+  const nepalOffsetHours = 5;
+  const nepalOffsetMinutes = 45;
   
-  // Sort each group by time (newest first)
-  Object.keys(groups).forEach(date => {
-    groups[date].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-  });
+  // Get the UTC time
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
   
-  return groups;
-};
-
-export const getCategoryColor = (category: string): string => {
-  const colors: Record<string, string> = {
-    food: 'bg-orange-500',
-    transportation: 'bg-blue-500',
-    entertainment: 'bg-purple-500',
-    shopping: 'bg-pink-500',
-    utilities: 'bg-yellow-500',
-    health: 'bg-green-500',
-    education: 'bg-indigo-500',
-    travel: 'bg-teal-500',
-    savings: 'bg-blue-500',
-    other: 'bg-gray-500'
-  };
+  // Create a new date with Nepal time
+  const nepalTime = new Date(utc + (3600000 * nepalOffsetHours) + (60000 * nepalOffsetMinutes));
   
-  return colors[category] || 'bg-gray-500';
-};
-
-export const getCategoryIcon = (category: string): string => {
-  const icons: Record<string, string> = {
-    food: '🍔',
-    transportation: '🚗',
-    entertainment: '🎬',
-    shopping: '🛍️',
-    utilities: '💡',
-    health: '⚕️',
-    education: '📚',
-    travel: '✈️',
-    savings: '💰',
-    other: '📦'
-  };
-  
-  return icons[category] || '📦';
+  // Format to ISO string and return the date part
+  return nepalTime.toISOString();
 };

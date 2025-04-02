@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChartBar, List, PlusCircle } from 'lucide-react';
+import { ChartBar, List, PlusCircle, Grid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FloatingNavigationProps {
@@ -37,8 +37,8 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = ({ onAddClick }) =
         >
           <div className="flex flex-col items-center">
             <div className="h-12 w-12 rounded-full bg-neon-purple flex items-center justify-center 
-                            shadow-[0_0_15px_rgba(162,105,255,0.7)] hover:shadow-[0_0_20px_rgba(162,105,255,0.9)] 
-                            transition-all duration-300 animate-pulse-subtle hover:scale-105">
+                          shadow-[0_0_15px_rgba(162,105,255,0.5)] hover:shadow-[0_0_20px_rgba(162,105,255,0.7)] 
+                          transition-all duration-300 hover:scale-105">
               <PlusCircle className="h-7 w-7 text-white" />
             </div>
           </div>
@@ -54,6 +54,19 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = ({ onAddClick }) =
           <div className="flex flex-col items-center">
             <List className="h-5 w-5 mb-1" />
             <span className="text-xs font-medium">Transactions</span>
+          </div>
+        </button>
+        
+        <button
+          onClick={() => navigate('/categories')}
+          className={cn(
+            "flex flex-1 items-center justify-center py-3 px-4 transition-colors",
+            path === '/categories' ? "text-neon-purple" : "text-white/70 hover:text-white"
+          )}
+        >
+          <div className="flex flex-col items-center">
+            <Grid className="h-5 w-5 mb-1" />
+            <span className="text-xs font-medium">Categories</span>
           </div>
         </button>
       </div>
