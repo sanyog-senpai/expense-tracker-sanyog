@@ -28,13 +28,18 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState<Category>('food');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 16));
+  const [date, setDate] = useState('');
   const [isExpense, setIsExpense] = useState(true);
   const [isSavings, setIsSavings] = useState(false);
   const [savingsPurpose, setSavingsPurpose] = useState('');
   const [remarks, setRemarks] = useState('');
   
+  // Reset form and set default values when modal opens
   useEffect(() => {
+    // Set current date and time as default
+    const now = new Date();
+    const currentDateTime = now.toISOString().slice(0, 16);
+    
     if (editTransaction) {
       setDescription(editTransaction.description);
       setAmount(editTransaction.amount);
@@ -48,13 +53,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
       setDescription('');
       setAmount(0);
       setCategory('food');
-      setDate(new Date().toISOString().slice(0, 16));
+      setDate(currentDateTime);
       setIsExpense(true);
       setIsSavings(false);
       setSavingsPurpose('');
       setRemarks('');
     }
-  }, [editTransaction]);
+  }, [editTransaction, isOpen]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

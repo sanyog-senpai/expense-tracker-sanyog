@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import TransactionItem from './TransactionItem';
@@ -8,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Search, FilterX, PiggyBank, ArrowDown, ArrowUp, ListFilter, 
-  Calendar, Download, FileDown, FileSpreadsheet, CalculatorIcon
+  Calendar, Download, FileDown, FileSpreadsheet, CalculatorIcon,
+  TrendingUp, CircleDollarSign
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +18,17 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerChildren, slideUp } from '@/lib/animations';
 import { exportTransactionsToExcel } from '@/utils/exportUtils';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { 
   Popover,
   PopoverContent,
@@ -118,6 +131,43 @@ const TransactionList: React.FC<TransactionListProps> = ({
     }
   }, [filteredTransactions, filter, summaryStats]);
   
+  // Get date range for filtered transactions
+  const getDateRangeText = useMemo(() => {
+    if (filteredTransactions.length === 0) return "No transactions";
+    
+    if (monthFilter !== 'All' && yearFilter !== 'All') {
+      return `${monthFilter} ${yearFilter}`;
+    }
+    
+    // If specific filters are applied, show custom date range
+    if (filteredTransactions.length > 0) {
+      // Sort transactions by date
+      const sortedTransactions = [...filteredTransactions].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      
+      const oldestDate = new Date(sortedTransactions[0].date);
+      const newestDate = new Date(sortedTransactions[sortedTransactions.length - 1].date);
+      
+      // Format dates
+      const oldestDateStr = oldestDate.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: yearFilter === 'All' ? 'numeric' : undefined 
+      });
+      
+      const newestDateStr = newestDate.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: yearFilter === 'All' ? 'numeric' : undefined 
+      });
+      
+      return `${oldestDateStr} - ${newestDateStr}`;
+    }
+    
+    return yearFilter !== 'All' ? yearFilter : (monthFilter !== 'All' ? monthFilter : "All time");
+  }, [filteredTransactions, monthFilter, yearFilter]);
+  
   const groupedTransactions = groupTransactionsByDate(filteredTransactions);
   const groupDates = Object.keys(groupedTransactions);
   
@@ -185,6 +235,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
     if (filter === 'income') return <ArrowUp className="h-4 w-4 text-green-400" />;
     if (filter === 'savings') return <PiggyBank className="h-4 w-4 text-blue-400" />;
     return <CalculatorIcon className="h-4 w-4 text-neon-purple" />;
+  };
+  
+  const handleDeleteWithConfirmation = (id: string) => {
+    onDeleteTransaction(id);
   };
   
   if (transactions.length === 0) {
@@ -393,7 +447,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
           </div>
         </div>
         
-        {/* Enhanced Summary Cards - Showing more complete stats */}
+        {/* Enhanced Summary Cards - Showing more complete stats with date range */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Main Total Card */}
           <motion.div
@@ -401,7 +455,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className={`overflow-hidden border-2 shadow-lg bg-gradient-to-br ${getTotalAmountColor()}`}>
+            <Card className={`overflow-hidden border-3 shadow-lg bg-gradient-to-br ${getTotalAmountColor()}`}>
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3 shadow-inner shadow-white/5">
@@ -414,6 +468,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     </div>
                     <p className="text-base md:text-lg font-semibold text-white mt-0.5">
                       {formatCurrency(totalFilteredAmount)}
+                    </p>
+                    <p className="text-2xs text-white/60 mt-1">
+                      {getDateRangeText}
                     </p>
                   </div>
                 </div>
@@ -431,20 +488,32 @@ const TransactionList: React.FC<TransactionListProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <Card className="overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white/5 to-white/2 border-white/10">
+              <Card className="overflow-hidden border-3 shadow-lg bg-gradient-to-br from-white/5 to-white/2 border-white/10">
                 <CardContent className="p-3">
-                  <h4 className="text-xs font-medium text-white/80 mb-2">Breakdown</h4>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-xs font-medium text-white/80">Breakdown</h4>
+                    <p className="text-2xs text-white/50">{getDateRangeText}</p>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div className="p-2 rounded-md bg-green-500/10 border border-green-500/20">
-                      <p className="text-2xs text-white/60">Income</p>
+                      <div className="flex items-center mb-1">
+                        <ArrowUp className="h-3 w-3 text-green-400 mr-1" />
+                        <p className="text-2xs text-white/60">Income</p>
+                      </div>
                       <p className="text-xs font-semibold text-green-400">{formatCurrency(summaryStats.income)}</p>
                     </div>
                     <div className="p-2 rounded-md bg-red-500/10 border border-red-500/20">
-                      <p className="text-2xs text-white/60">Expense</p>
+                      <div className="flex items-center mb-1">
+                        <ArrowDown className="h-3 w-3 text-red-400 mr-1" />
+                        <p className="text-2xs text-white/60">Expense</p>
+                      </div>
                       <p className="text-xs font-semibold text-red-400">{formatCurrency(summaryStats.expenses)}</p>
                     </div>
                     <div className="p-2 rounded-md bg-blue-500/10 border border-blue-500/20">
-                      <p className="text-2xs text-white/60">Savings</p>
+                      <div className="flex items-center mb-1">
+                        <PiggyBank className="h-3 w-3 text-blue-400 mr-1" />
+                        <p className="text-2xs text-white/60">Savings</p>
+                      </div>
                       <p className="text-xs font-semibold text-blue-400">{formatCurrency(summaryStats.savings)}</p>
                     </div>
                   </div>
@@ -488,7 +557,54 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     <TransactionItem
                       transaction={transaction}
                       onEditClick={onEditTransaction}
-                      onDeleteClick={onDeleteTransaction}
+                      onDeleteClick={(id) => {
+                        // Instead of directly deleting, we'll show a confirmation dialog
+                        // The actual deletion happens in the alert dialog action
+                      }}
+                      actionContent={
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-white/50 hover:text-red-400 hover:bg-red-500/10"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-4 w-4"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-purple-dark border-white/10">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-white">Confirm Deletion</AlertDialogTitle>
+                              <AlertDialogDescription className="text-white/70">
+                                Are you sure you want to delete this transaction?<br />
+                                <span className="font-semibold text-white/90">{transaction.description}</span> - {formatCurrency(transaction.amount)}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="bg-transparent text-white/70 border-white/10 hover:bg-white/5 hover:text-white">Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                className="bg-red-500 hover:bg-red-600 text-white" 
+                                onClick={() => handleDeleteWithConfirmation(transaction.id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      }
                     />
                   </motion.div>
                 ))}

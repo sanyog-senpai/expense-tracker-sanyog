@@ -1,238 +1,241 @@
 
 import React, { useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useTransactions } from '@/context/TransactionContext';
-import Layout from '@/components/Layout';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useTransactions, Transaction } from '@/context/TransactionContext';
+import { formatCurrency, formatDate, formatTime, getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
 import { Button } from '@/components/ui/button';
-import { formatDate, formatTime, formatCurrency, getCategoryIcon, getCategoryColor } from '@/utils/dateUtils';
-import { motion } from 'framer-motion';
-import { ChevronLeft, Edit, Trash } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Separator } from '@/components/ui/separator';
-import { fadeIn } from '@/lib/animations';
+import { Card, CardContent } from '@/components/ui/card';
+import { ChevronLeft, Calendar, Clock, Edit, Trash2 } from 'lucide-react';
+import CategoryPill from '@/components/CategoryPill';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import AddTransaction from '@/components/AddTransaction';
 import { useToast } from '@/components/ui/use-toast';
+import { motion } from 'framer-motion';
 
 const TransactionDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { state, deleteTransaction } = useTransactions();
-  const { toast } = useToast();
+  const { state, updateTransaction, deleteTransaction } = useTransactions();
   const navigate = useNavigate();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const { toast } = useToast();
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   
   const transaction = useMemo(() => {
-    // Find the transaction in the current transactions array
     return state.transactions.find(t => t.id === id);
   }, [id, state.transactions]);
   
-  // Calculate before and after balance
-  const balanceInfo = useMemo(() => {
-    if (!transaction) return { before: 0, after: 0 };
-    
-    // Sort all transactions by date (oldest first)
-    const sortedTransactions = [...state.transactions].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    
-    let balance = 0;
-    let beforeBalance = 0;
-    let afterBalance = 0;
-    let foundTransaction = false;
-    
-    for (const t of sortedTransactions) {
-      // If this is our transaction, remember the balance before
-      if (t.id === transaction.id) {
-        beforeBalance = balance;
-        foundTransaction = true;
-      }
-      
-      // Update running balance
-      if (t.isExpense) {
-        balance -= t.amount;
-      } else {
-        balance += t.amount;
-      }
-      
-      // If we just processed our transaction, remember the balance after
-      if (t.id === transaction.id) {
-        afterBalance = balance;
-      }
-    }
-    
-    return { before: beforeBalance, after: afterBalance };
-  }, [transaction, state.transactions]);
-  
-  // If the transaction is not found, redirect to home
-  React.useEffect(() => {
-    if (!transaction && !state.loading) {
+  const handleDelete = () => {
+    if (id) {
+      deleteTransaction(id);
       toast({
-        title: "Transaction not found",
-        description: "The transaction you're looking for doesn't exist or was deleted.",
-        variant: "destructive",
+        title: 'Transaction deleted',
+        description: 'The transaction has been successfully deleted.'
       });
       navigate('/');
     }
-  }, [transaction, state.loading, navigate, toast]);
+  };
   
-  if (!transaction) {
+  const handleEdit = (updatedTransaction: Omit<Transaction, 'id'>) => {
+    if (id && transaction) {
+      updateTransaction({
+        ...updatedTransaction,
+        id
+      });
+      toast({
+        title: 'Transaction updated',
+        description: 'The transaction has been successfully updated.'
+      });
+      setIsEditModalOpen(false);
+    }
+  };
+  
+  if (state.loading) {
     return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center h-[50vh]">
-          <h1 className="text-2xl font-bold text-white mb-4">Transaction not found</h1>
-          <Button asChild>
-            <Link to="/">Go Back</Link>
-          </Button>
-        </div>
-      </Layout>
+      <div className="min-h-screen bg-purple-dark p-4 md:p-6 flex items-center justify-center">
+        <div className="animate-pulse text-white/70">Loading transaction details...</div>
+      </div>
     );
   }
   
-  const handleDelete = () => {
-    deleteTransaction(transaction.id);
-    toast({
-      title: "Transaction deleted",
-      description: "The transaction has been successfully deleted.",
-    });
-    navigate('/');
+  if (!transaction) {
+    return (
+      <div className="min-h-screen bg-purple-dark p-4 md:p-6">
+        <div className="max-w-lg mx-auto">
+          <Button 
+            variant="outline" 
+            className="bg-white/5 border-white/10 text-white hover:bg-white/10 mb-6"
+            onClick={() => navigate('/')}
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Back to Transactions
+          </Button>
+          
+          <Card className="border-white/10 bg-white/5 overflow-hidden shadow-xl">
+            <CardContent className="p-6 md:p-8 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+                <Trash2 className="h-8 w-8 text-red-400" />
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Transaction Not Found</h2>
+              <p className="text-white/70 mb-6">This transaction may have been deleted or doesn't exist.</p>
+              <Button 
+                onClick={() => navigate('/')}
+                className="bg-neon-purple hover:bg-neon-purple/90"
+              >
+                Go to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+  
+  const getBgColor = () => {
+    if (transaction.isSavings) return 'bg-gradient-to-br from-blue-500/20 to-blue-600/10 border-blue-400/30';
+    if (transaction.isExpense) return 'bg-gradient-to-br from-red-500/20 to-red-600/10 border-red-400/30';
+    return 'bg-gradient-to-br from-green-500/20 to-green-600/10 border-green-400/30';
   };
   
-  const categoryClass = getCategoryColor(transaction.category);
-  const categoryIcon = getCategoryIcon(transaction.category);
+  const getTextColor = () => {
+    if (transaction.isSavings) return 'text-blue-400';
+    if (transaction.isExpense) return 'text-red-400';
+    return 'text-green-400';
+  };
+  
+  const getTypeText = () => {
+    if (transaction.isSavings) return 'Savings';
+    if (transaction.isExpense) return 'Expense';
+    return 'Income';
+  };
   
   return (
-    <Layout>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="container max-w-md mx-auto px-4 py-8"
-      >
-        <div className="mb-6">
+    <div className="min-h-screen bg-purple-dark p-4 md:p-6">
+      <div className="max-w-lg mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <Button 
-            variant="ghost" 
-            size="sm"
+            variant="outline" 
+            className="bg-white/5 border-white/10 text-white hover:bg-white/10 mb-6"
             onClick={() => navigate('/')}
-            className="text-white/70 hover:text-white hover:bg-white/10"
           >
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            Back
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Back to Transactions
           </Button>
-        </div>
+        </motion.div>
         
         <motion.div
-          variants={fadeIn}
-          className="glass-card neon-border p-6 rounded-xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-1">{transaction.description}</h1>
-              <p className="text-white/60 text-sm">
-                {formatDate(transaction.date)} at {formatTime(transaction.date)}
-              </p>
+          <Card className="border-white/10 overflow-hidden">
+            <div className={`${getBgColor()} p-6 md:p-8`}>
+              <div className="flex justify-between items-start mb-4">
+                <CategoryPill category={transaction.category} />
+                <div className="flex space-x-2">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/10 hover:bg-white/20 border-white/10 text-white"
+                      onClick={() => setIsEditModalOpen(true)}
+                    >
+                      <Edit className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
+                    </Button>
+                  </motion.div>
+                  
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white/10 hover:bg-red-500/20 border-white/10 text-white"
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-purple-dark border-white/10">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-white">Confirm Deletion</AlertDialogTitle>
+                          <AlertDialogDescription className="text-white/70">
+                            Are you sure you want to delete this transaction? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-transparent text-white/70 border-white/10 hover:bg-white/5 hover:text-white">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleDelete}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </motion.div>
+                </div>
+              </div>
+              
+              <h1 className="text-lg md:text-xl font-bold text-white/90 mb-1">
+                {transaction.description}
+              </h1>
+              
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="flex items-center text-white/60 text-xs">
+                  <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                  {formatDate(transaction.date)}
+                </div>
+                <div className="flex items-center text-white/60 text-xs">
+                  <Clock className="h-3.5 w-3.5 mr-1.5" />
+                  {formatTime(transaction.date)}
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-center md:flex-row md:justify-between bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                <div className="mb-3 md:mb-0">
+                  <p className="text-white/50 text-xs mb-1 text-center md:text-left">
+                    {getTypeText()}
+                  </p>
+                  <p className={`text-2xl md:text-3xl font-bold ${getTextColor()}`}>
+                    {formatCurrency(transaction.amount)}
+                  </p>
+                </div>
+                
+                {transaction.isSavings && transaction.savingsPurpose && (
+                  <div className="bg-blue-500/20 px-3 py-2 rounded-md border border-blue-400/30">
+                    <p className="text-white/60 text-2xs mb-0.5">Savings Purpose</p>
+                    <p className="text-blue-300 text-sm font-medium">{transaction.savingsPurpose}</p>
+                  </div>
+                )}
+              </div>
             </div>
             
-            <div className={`${categoryClass} w-10 h-10 rounded-full flex items-center justify-center text-lg`}>
-              {categoryIcon}
-            </div>
-          </div>
-          
-          <div className="mb-6">
-            <h2 className={`text-3xl font-bold ${
-              transaction.isExpense 
-                ? transaction.isSavings 
-                  ? 'text-blue-400' 
-                  : 'text-red-400' 
-                : 'text-green-400'
-            }`}>
-              {transaction.isExpense ? '-' : '+'}{formatCurrency(transaction.amount)}
-            </h2>
-            <p className="text-white/60 text-sm mt-1 capitalize">
-              {transaction.category} {transaction.isSavings && '• Savings'}
-            </p>
-          </div>
-          
-          {/* Balance Information Section */}
-          <div className="bg-white/5 p-4 rounded-lg mb-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-xs font-medium text-white/60 mb-1">Before</h3>
-                <p className={`text-base font-mono font-semibold ${balanceInfo.before >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {formatCurrency(balanceInfo.before)}
+            {transaction.remarks && (
+              <CardContent className="p-6">
+                <h3 className="text-sm font-medium text-white/80 mb-2">Notes</h3>
+                <p className="text-white/70 text-sm whitespace-pre-wrap rounded-md bg-white/5 p-3 border border-white/10">
+                  {transaction.remarks}
                 </p>
-              </div>
-              <div>
-                <h3 className="text-xs font-medium text-white/60 mb-1">After</h3>
-                <p className={`text-base font-mono font-semibold ${balanceInfo.after >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {formatCurrency(balanceInfo.after)}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <Separator className="bg-white/10 my-5" />
-          
-          {transaction.isSavings && transaction.savingsPurpose && (
-            <div className="mb-5">
-              <h3 className="text-sm font-medium text-white/70 mb-1">Savings Purpose</h3>
-              <p className="text-white bg-white/5 p-3 rounded-lg text-sm">{transaction.savingsPurpose}</p>
-            </div>
-          )}
-          
-          {transaction.remarks && (
-            <div className="mb-5">
-              <h3 className="text-sm font-medium text-white/70 mb-1">Notes</h3>
-              <p className="text-white bg-white/5 p-3 rounded-lg text-sm">{transaction.remarks}</p>
-            </div>
-          )}
-          
-          <div className="flex space-x-3 mt-8">
-            <Button 
-              variant="outline" 
-              className="flex-1 border-white/10 text-white hover:bg-white/10"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash className="mr-2 h-4 w-4 text-red-400" />
-              Delete
-            </Button>
-            <Button 
-              asChild
-              className="flex-1 bg-neon-purple hover:bg-neon-purple/90"
-            >
-              <Link to={`/transaction/edit/${transaction.id}`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-          </div>
+              </CardContent>
+            )}
+          </Card>
         </motion.div>
-      </motion.div>
+      </div>
       
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="bg-purple-dark border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Transaction</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/70">
-              Are you sure you want to delete this transaction? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/5 text-white border-white/10 hover:bg-white/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-500 hover:bg-red-600 text-white" onClick={handleDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Layout>
+      <AddTransaction
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleEdit}
+        editTransaction={transaction}
+      />
+    </div>
   );
 };
 

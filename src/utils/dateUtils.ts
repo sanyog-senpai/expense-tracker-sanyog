@@ -1,3 +1,4 @@
+
 import { format, parseISO, isToday, isYesterday, isThisWeek, isThisMonth, isThisYear } from 'date-fns';
 
 export const formatCurrency = (amount: number): string => {
@@ -62,6 +63,7 @@ export const getCategoryColor = (category: string): string => {
     health: 'bg-green-500',
     education: 'bg-indigo-500',
     travel: 'bg-teal-500',
+    savings: 'bg-blue-500',
     other: 'bg-gray-500'
   };
   
@@ -78,6 +80,7 @@ export const getCategoryIcon = (category: string): string => {
     health: '⚕️',
     education: '📚',
     travel: '✈️',
+    savings: '💰',
     other: '📦'
   };
   

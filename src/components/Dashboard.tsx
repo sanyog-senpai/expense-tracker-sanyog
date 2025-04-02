@@ -3,12 +3,13 @@ import React, { useMemo } from 'react';
 import { Transaction } from '@/context/TransactionContext';
 import { formatCurrency } from '@/utils/dateUtils';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowDown, ArrowUp, Wallet, CreditCard, PiggyBank } from 'lucide-react';
+import { ArrowDown, ArrowUp, Wallet, CreditCard, PiggyBank, CircleDollarSign, TrendingUp } from 'lucide-react';
 import AnimatedNumber from './AnimatedNumber';
 import ExpenseChart from './ExpenseChart';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { fadeIn, slideUp } from '@/lib/animations';
+import { Badge } from '@/components/ui/badge';
 
 interface DashboardProps {
   transactions: Transaction[];
@@ -72,6 +73,29 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                 <div className="p-2.5 rounded-full bg-gradient-to-br from-neon-purple/30 to-neon-blue/20 backdrop-blur-md border border-white/10 shadow-lg">
                   <CreditCard className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
+              </div>
+              
+              {/* Financial Summary Pills */}
+              <div className="mb-4 flex flex-wrap gap-2">
+                <Badge className="bg-white/10 text-white hover:bg-white/15 px-2 py-1">
+                  <CircleDollarSign className="h-3 w-3 mr-1" />
+                  <span className="text-2xs">Financial Summary</span>
+                </Badge>
+                
+                <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/30 px-2 py-1">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  <span className="text-2xs">Income: {formatCurrency(stats.totalIncome)}</span>
+                </Badge>
+                
+                <Badge className="bg-red-500/20 text-red-400 hover:bg-red-500/30 px-2 py-1">
+                  <ArrowDown className="h-3 w-3 mr-1" />
+                  <span className="text-2xs">Expense: {formatCurrency(stats.totalExpenses)}</span>
+                </Badge>
+                
+                <Badge className="bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 px-2 py-1">
+                  <PiggyBank className="h-3 w-3 mr-1" />
+                  <span className="text-2xs">Savings: {formatCurrency(stats.totalSavings)}</span>
+                </Badge>
               </div>
               
               {/* Main stats in single row with enhanced styling */}
