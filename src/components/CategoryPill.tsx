@@ -44,15 +44,15 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
     return capitalized;
   };
   
-  // Apply size classes based on props - making them smaller overall
-  let sizeClasses = 'text-3xs md:text-2xs py-0.5 px-1.5';
+  // Apply size classes based on props
+  let sizeClasses = 'text-2xs md:text-xs py-0.5 px-2';
   
   if (small) {
-    sizeClasses = 'text-3xs py-0 px-1 leading-tight';
+    sizeClasses = 'text-3xs py-0 px-1.5 leading-tight';
   }
   
   if (extraSmall) {
-    sizeClasses = 'text-3xs py-0 px-0.5 leading-tight';
+    sizeClasses = 'text-3xs py-0 px-1 leading-tight';
   }
   
   // Get the icon component
@@ -70,8 +70,8 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
       )}
     >
       {showIcon && (
-        <div className="w-2.5 h-2.5 rounded-full flex items-center justify-center mr-1 bg-white/10">
-          {React.createElement(IconComponent, { size: 10 })}
+        <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center mr-1.5 bg-white/20">
+          {React.createElement(IconComponent, { size: 12 })}
         </div>
       )}
       {displayText()}

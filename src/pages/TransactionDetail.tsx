@@ -177,24 +177,31 @@ const TransactionDetail = () => {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2 mb-1">
-                    <div className={`w-8 h-8 ${getCategoryColor(transaction.category)} bg-white/10 rounded-full flex items-center justify-center`}>
-                      {React.createElement(getCategoryIcon(transaction.category), { size: 16 })}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-white/10`}>
+                      {React.createElement(getCategoryIcon(transaction.category), { 
+                        size: 18,
+                        className: getCategoryColor(transaction.category)
+                      })}
                     </div>
                     <h1 className="text-lg md:text-xl font-bold text-white/90">
                       {transaction.description}
                     </h1>
                   </div>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className="flex items-center text-white/70 text-xs">
-                      <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                      {formatDate(transaction.date)}
+                  <div className="flex flex-col space-y-1.5">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center text-white/70 text-xs">
+                        <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                        {formatDate(transaction.date)}
+                      </div>
+                      <div className="flex items-center text-white/70 text-xs">
+                        <Clock className="h-3.5 w-3.5 mr-1.5" />
+                        {formatTime(transaction.date)}
+                      </div>
                     </div>
-                    <div className="flex items-center text-white/70 text-xs">
-                      <Clock className="h-3.5 w-3.5 mr-1.5" />
-                      {formatTime(transaction.date)}
+                    <div>
+                      <CategoryPill category={transaction.category} showIcon className="self-start mt-1" />
                     </div>
                   </div>
-                  <CategoryPill category={transaction.category} small showIcon className="self-start" />
                 </div>
                 
                 <div className="flex space-x-2">
@@ -202,7 +209,7 @@ const TransactionDetail = () => {
                     <Button
                       variant="outline"
                       size="icon"
-                      className="bg-white/10 hover:bg-neon-purple/20 border-white/10 text-white h-8 w-8"
+                      className="bg-neon-purple/10 hover:bg-neon-purple/20 border-neon-purple/30 text-neon-purple h-8 w-8"
                       onClick={() => setIsEditModalOpen(true)}
                     >
                       <Edit className="h-3.5 w-3.5" />
@@ -215,7 +222,7 @@ const TransactionDetail = () => {
                         <Button
                           variant="outline"
                           size="icon"
-                          className="bg-white/10 hover:bg-red-500/20 border-white/10 text-white h-8 w-8"
+                          className="bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400 h-8 w-8"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -246,10 +253,10 @@ const TransactionDetail = () => {
               
               <div className="flex flex-col items-center md:flex-row md:justify-between bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10 mt-5">
                 <div className="mb-3 md:mb-0">
-                  <div className="inline-flex items-center px-2 py-1 rounded-full bg-white/10 mb-2">
+                  <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 mb-2">
                     {transaction.isExpense ? 
-                      <ArrowDown className="h-3 w-3 text-red-400 mr-1" /> : 
-                      <ArrowUp className="h-3 w-3 text-green-400 mr-1" />
+                      <ArrowDown className="h-3.5 w-3.5 text-red-400 mr-1.5" /> : 
+                      <ArrowUp className="h-3.5 w-3.5 text-green-400 mr-1.5" />
                     }
                     <span className={`text-xs font-medium ${getTextColor()}`}>
                       {getTypeText()}
