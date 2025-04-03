@@ -107,6 +107,12 @@ const CategoryManagement = () => {
     }
   };
   
+  // Helper function to render the icon component
+  const renderCategoryIcon = (iconName: string) => {
+    const IconComponent = getCategoryIcon(iconName);
+    return <IconComponent className="h-4 w-4" />;
+  };
+  
   return (
     <Layout>
       <motion.div 
@@ -186,7 +192,9 @@ const CategoryManagement = () => {
                         {CATEGORY_ICONS.map((icon) => (
                           <SelectItem key={icon.value} value={icon.value}>
                             <div className="flex items-center">
-                              <div className="mr-2 text-white">{getCategoryIcon(icon.value)}</div>
+                              <div className="mr-2 text-white">
+                                {renderCategoryIcon(icon.value)}
+                              </div>
                               <span>{icon.name}</span>
                             </div>
                           </SelectItem>
@@ -200,7 +208,7 @@ const CategoryManagement = () => {
                   <div className="flex items-center space-x-3 mt-2 mb-4">
                     <div className="text-sm text-white/70">Preview:</div>
                     <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full ${getCategoryColorClass(newCategory || selectedColor)}`}>
-                      <span>{getCategoryIcon(selectedIcon)}</span>
+                      {renderCategoryIcon(selectedIcon)}
                       <span>{newCategory || 'Category Name'}</span>
                     </div>
                   </div>
@@ -236,7 +244,7 @@ const CategoryManagement = () => {
                     <CardContent className="p-3 flex items-center justify-between">
                       <div className="flex items-center">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${getCategoryColorClass(category)}`}>
-                          {getCategoryIcon(config.icon || category)}
+                          {renderCategoryIcon(config.icon || category)}
                         </div>
                         <div>
                           <p className="text-white font-medium capitalize">{category}</p>

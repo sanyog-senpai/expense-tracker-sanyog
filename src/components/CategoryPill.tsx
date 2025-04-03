@@ -10,9 +10,16 @@ interface CategoryPillProps {
   className?: string;
   small?: boolean;
   extraSmall?: boolean;
+  showIcon?: boolean;
 }
 
-const CategoryPill: React.FC<CategoryPillProps> = ({ category, className, small, extraSmall }) => {
+const CategoryPill: React.FC<CategoryPillProps> = ({ 
+  category, 
+  className, 
+  small, 
+  extraSmall,
+  showIcon = false
+}) => {
   const colorClass = getCategoryColor(category);
   const isMobile = useIsMobile();
   
@@ -49,6 +56,9 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, className, small,
     sizeClasses = 'text-3xs py-0 px-0.5 leading-tight';
   }
   
+  // Get the icon component
+  const IconComponent = getCategoryIcon(category);
+  
   return (
     <div 
       className={cn(
@@ -56,9 +66,13 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, className, small,
         sizeClasses,
         'font-medium rounded-full',
         'backdrop-blur-sm whitespace-nowrap',
+        showIcon ? 'flex items-center' : '',
         className
       )}
     >
+      {showIcon && (
+        <IconComponent className="h-3 w-3 mr-1" />
+      )}
       {displayText()}
     </div>
   );
