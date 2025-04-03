@@ -17,11 +17,11 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = ({ onAddClick }) =
 
   return (
     <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-center">
-      <div className="flex w-[240px] glass-card neon-border backdrop-blur-md rounded-full overflow-hidden">
+      <div className="flex w-[280px] glass-card neon-border backdrop-blur-md rounded-full overflow-hidden">
         <button
           onClick={() => navigate('/')}
           className={cn(
-            "flex flex-1 items-center justify-center py-3 px-4 transition-colors",
+            "flex flex-1 items-center justify-center py-3 px-2 transition-colors",
             path === '/' && !tabParam ? "text-neon-purple" : "text-white/70 hover:text-white"
           )}
         >
@@ -47,7 +47,7 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = ({ onAddClick }) =
         <button
           onClick={() => navigate('/?tab=transactions')}
           className={cn(
-            "flex flex-1 items-center justify-center py-3 px-4 transition-colors",
+            "flex flex-1 items-center justify-center py-3 px-2 transition-colors",
             path === '/' && tabParam === 'transactions' ? "text-neon-purple" : "text-white/70 hover:text-white"
           )}
         >

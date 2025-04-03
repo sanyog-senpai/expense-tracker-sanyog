@@ -5,7 +5,7 @@ import { useTransactions, Transaction } from '@/context/TransactionContext';
 import { formatCurrency, formatDate, formatTime, getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeft, Calendar, Clock, Edit, Trash2, ArrowDown, ArrowUp, PiggyBank } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock, Edit, Trash2, ArrowDown, ArrowUp } from 'lucide-react';
 import CategoryPill from '@/components/CategoryPill';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import AddTransaction from '@/components/AddTransaction';
@@ -175,18 +175,37 @@ const TransactionDetail = () => {
           <Card className="border-white/10 overflow-hidden">
             <div className={`${getBgColor()} p-6 md:p-8`}>
               <div className="flex justify-between items-start mb-4">
-                <CategoryPill category={transaction.category} />
+                <div className="flex flex-col space-y-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className={`w-8 h-8 ${getCategoryColor(transaction.category)} bg-white/10 rounded-full flex items-center justify-center`}>
+                      {React.createElement(getCategoryIcon(transaction.category), { size: 16 })}
+                    </div>
+                    <h1 className="text-lg md:text-xl font-bold text-white/90">
+                      {transaction.description}
+                    </h1>
+                  </div>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="flex items-center text-white/70 text-xs">
+                      <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                      {formatDate(transaction.date)}
+                    </div>
+                    <div className="flex items-center text-white/70 text-xs">
+                      <Clock className="h-3.5 w-3.5 mr-1.5" />
+                      {formatTime(transaction.date)}
+                    </div>
+                  </div>
+                  <CategoryPill category={transaction.category} small showIcon className="self-start" />
+                </div>
                 
                 <div className="flex space-x-2">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="bg-white/10 hover:bg-white/20 border-white/10 text-white"
+                      size="icon"
+                      className="bg-white/10 hover:bg-neon-purple/20 border-white/10 text-white h-8 w-8"
                       onClick={() => setIsEditModalOpen(true)}
                     >
-                      <Edit className="h-3.5 w-3.5 mr-1.5" />
-                      Edit
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
                   </motion.div>
                   
@@ -195,11 +214,10 @@ const TransactionDetail = () => {
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="bg-white/10 hover:bg-red-500/20 border-white/10 text-white"
+                          size="icon"
+                          className="bg-white/10 hover:bg-red-500/20 border-white/10 text-white h-8 w-8"
                         >
-                          <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                          Delete
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-purple-dark border-white/10">
@@ -226,26 +244,17 @@ const TransactionDetail = () => {
                 </div>
               </div>
               
-              <h1 className="text-lg md:text-xl font-bold text-white/90 mb-1">
-                {transaction.description}
-              </h1>
-              
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="flex items-center text-white/60 text-xs">
-                  <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                  {formatDate(transaction.date)}
-                </div>
-                <div className="flex items-center text-white/60 text-xs">
-                  <Clock className="h-3.5 w-3.5 mr-1.5" />
-                  {formatTime(transaction.date)}
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-center md:flex-row md:justify-between bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10">
+              <div className="flex flex-col items-center md:flex-row md:justify-between bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10 mt-5">
                 <div className="mb-3 md:mb-0">
-                  <p className="text-white/50 text-xs mb-1 text-center md:text-left">
-                    {getTypeText()}
-                  </p>
+                  <div className="inline-flex items-center px-2 py-1 rounded-full bg-white/10 mb-2">
+                    {transaction.isExpense ? 
+                      <ArrowDown className="h-3 w-3 text-red-400 mr-1" /> : 
+                      <ArrowUp className="h-3 w-3 text-green-400 mr-1" />
+                    }
+                    <span className={`text-xs font-medium ${getTextColor()}`}>
+                      {getTypeText()}
+                    </span>
+                  </div>
                   <p className={`text-2xl md:text-3xl font-bold ${getTextColor()}`}>
                     {formatCurrency(transaction.amount)}
                   </p>

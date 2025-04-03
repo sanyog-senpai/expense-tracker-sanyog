@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -38,9 +37,13 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
   
   // Reset form and set default values when modal opens
   useEffect(() => {
-    // Set current date and time as default
+    // Set current date and time as default (Nepal Standard Time - UTC+05:45)
     const now = new Date();
-    const currentDateTime = now.toISOString().slice(0, 16);
+    // Adjust for Nepal timezone (UTC+05:45)
+    const nepalOffset = 5 * 60 + 45; // 5 hours and 45 minutes in minutes
+    const userOffset = now.getTimezoneOffset(); // User's timezone offset in minutes
+    const nepalTime = new Date(now.getTime() + (nepalOffset + userOffset) * 60 * 1000);
+    const currentDateTime = nepalTime.toISOString().slice(0, 16);
     
     if (editTransaction) {
       setDescription(editTransaction.description);
@@ -121,17 +124,11 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">रु</span>
                       <Input
                         id="amount"
-                        type="text" 
+                        type="number" 
                         inputMode="decimal"
                         placeholder="0.00"
                         value={amount}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          // Only allow numbers and decimal point
-                          if (/^[0-9]*\.?[0-9]*$/.test(value) || value === '') {
-                            setAmount(value);
-                          }
-                        }}
+                        onChange={(e) => setAmount(e.target.value)}
                         className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white pl-8 h-10"
                         required
                       />

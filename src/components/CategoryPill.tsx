@@ -3,7 +3,6 @@ import React from 'react';
 import { getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { LucideIcon } from 'lucide-react';
 
 interface CategoryPillProps {
   category: string;
@@ -71,7 +70,9 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
       )}
     >
       {showIcon && (
-        <IconComponent className="h-3 w-3 mr-1" />
+        <div className="w-2.5 h-2.5 rounded-full flex items-center justify-center mr-1 bg-white/10">
+          {React.createElement(IconComponent, { size: 10 })}
+        </div>
       )}
       {displayText()}
     </div>

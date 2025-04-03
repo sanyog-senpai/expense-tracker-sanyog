@@ -55,7 +55,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
             <div className="flex items-center px-3 py-2.5 md:px-4 w-full">
               {/* Category icon */}
               <div className={`flex-shrink-0 w-8 h-8 ${getCategoryColor(transaction.category)} bg-opacity-20 rounded-full flex items-center justify-center mr-3`}>
-                <IconComponent className="h-4 w-4" />
+                {React.createElement(IconComponent, { size: 16 })}
               </div>
               
               {/* Description and time */}
