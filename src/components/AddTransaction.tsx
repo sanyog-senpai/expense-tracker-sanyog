@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
     // Set current date and time as default (Nepal Standard Time - UTC+05:45)
     const now = new Date();
     // Adjust for Nepal timezone (UTC+05:45)
-    const nepalOffset = 5 * 60 + 45; // 5 hours and 45 minutes in minutes
+    const nepalOffset = 345; // 5 hours and 45 minutes in minutes
     const userOffset = now.getTimezoneOffset(); // User's timezone offset in minutes
     const nepalTime = new Date(now.getTime() + (nepalOffset + userOffset) * 60 * 1000);
     const currentDateTime = nepalTime.toISOString().slice(0, 16);
