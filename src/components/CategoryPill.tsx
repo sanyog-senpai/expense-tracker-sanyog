@@ -35,12 +35,9 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
   
   const neoBgColor = getNeoBgColor(colorClass);
   
-  // For very long category names, truncate them on mobile
+  // For very long category names, allow them to be displayed
   const displayText = () => {
     const capitalized = category.charAt(0).toUpperCase() + category.slice(1);
-    if (isMobile && capitalized.length > 8) {
-      return capitalized.slice(0, 6) + '..';
-    }
     return capitalized;
   };
   
@@ -64,7 +61,7 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
         neoBgColor,
         sizeClasses,
         'font-medium rounded-full',
-        'backdrop-blur-sm whitespace-nowrap',
+        'backdrop-blur-sm',
         showIcon ? 'flex items-center' : '',
         className
       )}
