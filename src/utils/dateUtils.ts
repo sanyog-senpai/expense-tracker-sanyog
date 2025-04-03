@@ -1,4 +1,9 @@
+
 import { format, isToday, isYesterday } from 'date-fns';
+import { 
+  GraduationCap, Car, Utensils, Film, 
+  ShoppingBag, Plug, Heart, Plane, PiggyBank, Home, Grid
+} from 'lucide-react';
 
 // Function to format the date
 export const formatDate = (dateStr: string): string => {
@@ -29,44 +34,34 @@ export const formatCurrency = (amount: number): string => {
   });
 };
 
-// Function to group transactions by date
-import React from 'react';
-import { 
-  Coffee, ShoppingBag, Music, MusicIcon, DollarSign, Banknote, 
-  GraduationCap, Car, Bus, Utensils, Palmtree, Film, 
-  Home, Heart, Stethoscope, PiggyBank, Grid, CreditCard,
-  Ticket, BookOpen, Dumbbell, ShoppingCart, Droplet, Plug,
-  Map, Plane, Gift, Tv, Smartphone
-} from 'lucide-react';
-
-// Get icon based on category name or icon name
+// Instead of returning JSX directly, return the icon component type
 export const getCategoryIcon = (category: string) => {
-  // First, check if we're receiving the icon name directly
+  // Return the appropriate icon component based on category
   switch (category.toLowerCase()) {
     case 'food':
-      return <Utensils className="h-4 w-4" />;
+      return Utensils;
     case 'car':
     case 'transportation':
-      return <Car className="h-4 w-4" />;
+      return Car;
     case 'education':
-      return <GraduationCap className="h-4 w-4" />;
+      return GraduationCap;
     case 'entertainment':
-      return <Film className="h-4 w-4" />;
+      return Film;
     case 'shopping':
-      return <ShoppingBag className="h-4 w-4" />;
+      return ShoppingBag;
     case 'utilities':
-      return <Plug className="h-4 w-4" />;
+      return Plug;
     case 'health':
-      return <Heart className="h-4 w-4" />;
+      return Heart;
     case 'travel':
-      return <Plane className="h-4 w-4" />;
+      return Plane;
     case 'savings':
-      return <PiggyBank className="h-4 w-4" />;
+      return PiggyBank;
     case 'home':
-      return <Home className="h-4 w-4" />;
+      return Home;
     case 'other':
     default:
-      return <Grid className="h-4 w-4" />;
+      return Grid;
   }
 };
 

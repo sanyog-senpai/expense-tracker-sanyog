@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { getCategoryColor } from '@/utils/dateUtils';
+import { getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { LucideIcon } from 'lucide-react';
 
 interface CategoryPillProps {
   category: string;
