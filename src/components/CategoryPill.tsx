@@ -31,17 +31,17 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, className, small,
   // For very long category names, truncate them on mobile
   const displayText = () => {
     const capitalized = category.charAt(0).toUpperCase() + category.slice(1);
-    if (isMobile && capitalized.length > 10) {
-      return capitalized.slice(0, 8) + '..';
+    if (isMobile && capitalized.length > 8) {
+      return capitalized.slice(0, 6) + '..';
     }
     return capitalized;
   };
   
-  // Apply size classes based on props
-  let sizeClasses = 'text-2xs md:text-xs py-0.5 md:py-1 px-1.5 md:px-2.5';
+  // Apply size classes based on props - making them smaller overall
+  let sizeClasses = 'text-3xs md:text-2xs py-0.5 px-1.5';
   
   if (small) {
-    sizeClasses = 'text-3xs md:text-2xs py-0 md:py-0.5 px-1 md:px-1.5';
+    sizeClasses = 'text-3xs py-0 px-1 leading-tight';
   }
   
   if (extraSmall) {

@@ -66,9 +66,12 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                     </div>
                   )}
                 </div>
-                <div className="flex items-center mt-0.5">
+                <div className="flex items-center mt-0.5 space-x-1.5">
                   <p className="text-white/60 text-3xs">{formatTime(transaction.date)}</p>
-                  <CategoryPill category={transaction.category} extraSmall className="ml-1.5" />
+                  <CategoryPill category={transaction.category} extraSmall className="" />
+                  {transaction.remarks && (
+                    <span className="text-3xs text-white/50 truncate max-w-[80px]">{transaction.remarks}</span>
+                  )}
                 </div>
               </div>
               
@@ -78,13 +81,6 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                   {getAmountPrefix()}{formatCurrency(transaction.amount)}
                 </p>
               </div>
-              
-              {/* Action buttons if provided */}
-              {actionContent && (
-                <div className="flex-shrink-0 ml-2">
-                  {actionContent}
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>

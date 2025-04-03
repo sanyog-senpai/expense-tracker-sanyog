@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { X, ArrowDown, ArrowUp, PiggyBank } from 'lucide-react';
 import { Category, Transaction } from '@/context/TransactionContext';
+import { useCategories } from '@/context/CategoryContext';
 import { motion } from 'framer-motion';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -26,13 +27,14 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
   editTransaction 
 }) => {
   const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>('food');
   const [date, setDate] = useState('');
   const [isExpense, setIsExpense] = useState(true);
   const [isSavings, setIsSavings] = useState(false);
   const [savingsPurpose, setSavingsPurpose] = useState('');
   const [remarks, setRemarks] = useState('');
+  const { categories } = useCategories();
   
   // Reset form and set default values when modal opens
   useEffect(() => {
@@ -42,7 +44,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
     
     if (editTransaction) {
       setDescription(editTransaction.description);
-      setAmount(editTransaction.amount);
+      setAmount(editTransaction.amount.toString());
       setCategory(editTransaction.category);
       setDate(editTransaction.date.slice(0, 16));
       setIsExpense(editTransaction.isExpense);
@@ -51,7 +53,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
       setRemarks(editTransaction.remarks || '');
     } else {
       setDescription('');
-      setAmount(0);
+      setAmount('');
       setCategory('food');
       setDate(currentDateTime);
       setIsExpense(true);
@@ -65,7 +67,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
     e.preventDefault();
     
     const transactionData: Omit<Transaction, 'id'> = {
-      amount,
+      amount: parseFloat(amount) || 0,
       description,
       date,
       category,
@@ -113,28 +115,23 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                 transition={{ duration: 0.3 }}
               >
                 <div className="grid grid-cols-2 gap-3 md:gap-4">
-                  <div className="col-span-2">
-                    <Label htmlFor="description" className="text-white/70 mb-1.5 block text-xs">Description</Label>
-                    <Input
-                      id="description"
-                      placeholder="Enter description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
-                      required
-                    />
-                  </div>
-                  
                   <div>
                     <Label htmlFor="amount" className="text-white/70 mb-1.5 block text-xs">Amount</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">रु</span>
                       <Input
                         id="amount"
-                        type="number"
+                        type="text" 
+                        inputMode="decimal"
                         placeholder="0.00"
                         value={amount}
-                        onChange={(e) => setAmount(Number(e.target.value))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Only allow numbers and decimal point
+                          if (/^[0-9]*\.?[0-9]*$/.test(value) || value === '') {
+                            setAmount(value);
+                          }
+                        }}
                         className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white pl-8 h-10"
                         required
                       />
@@ -154,16 +151,9 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent className="bg-purple-dark border-white/10">
-                        <SelectItem value="food">Food</SelectItem>
-                        <SelectItem value="transportation">Transportation</SelectItem>
-                        <SelectItem value="entertainment">Entertainment</SelectItem>
-                        <SelectItem value="shopping">Shopping</SelectItem>
-                        <SelectItem value="utilities">Utilities</SelectItem>
-                        <SelectItem value="health">Health</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="travel">Travel</SelectItem>
-                        <SelectItem value="savings">Savings</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -176,6 +166,18 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
                     type="datetime-local"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
+                    className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
+                    required
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label htmlFor="description" className="text-white/70 mb-1.5 block text-xs">Description</Label>
+                  <Input
+                    id="description"
+                    placeholder="Enter description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     className="bg-white/5 border-white/10 focus:border-neon-purple/50 text-white h-10"
                     required
                   />

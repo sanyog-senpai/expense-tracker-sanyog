@@ -1,148 +1,109 @@
+import { format, isToday, isYesterday } from 'date-fns';
 
-import {
-  BookOpen,
-  Book,
-  Bus,
-  CalendarClock,
-  Car,
-  Coffee,
-  Gamepad2,
-  Github,
-  GraduationCap,
-  HeartPulse,
-  Home,
-  IndianRupee,
-  Lightbulb,
-  MonitorSmartphone,
-  Pizza,
-  ShoppingCart,
-  Ticket,
-  Trees,
-  Wallet,
-} from "lucide-react";
-import React from "react"; // Add import for React
+// Function to format the date
+export const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  
+  if (isToday(date)) {
+    return 'Today';
+  } else if (isYesterday(date)) {
+    return 'Yesterday';
+  } else {
+    return format(date, 'MMMM dd, yyyy');
+  }
+};
 
-// Function to format currency
+// Function to format the time
+export const formatTime = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  return format(date, 'h:mm a');
+};
+
+// Function to format the currency
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
+  return amount.toLocaleString('en-NP', {
+    style: 'currency',
+    currency: 'NPR',
     minimumFractionDigits: 0,
-  }).format(amount);
-};
-
-// Function to format date
-export const formatDate = (date: string): string => {
-  return new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+    maximumFractionDigits: 0,
   });
 };
 
-// Function to format time
-export const formatTime = (date: string): string => {
-  return new Date(date).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+// Function to group transactions by date
+import React from 'react';
+import { 
+  Coffee, ShoppingBag, Music, MusicIcon, DollarSign, Banknote, 
+  GraduationCap, Car, Bus, Utensils, Palmtree, Film, 
+  Home, Heart, Stethoscope, PiggyBank, Grid, CreditCard,
+  Ticket, BookOpen, Dumbbell, ShoppingCart, Droplet, Plug,
+  Map, Plane, Gift, Tv, Smartphone
+} from 'lucide-react';
 
-// Category colors
-export const getCategoryColor = (category: string): string => {
-  switch (category) {
-    case "food":
-      return "bg-red-500";
-    case "transportation":
-      return "bg-blue-500";
-    case "entertainment":
-      return "bg-purple-500";
-    case "shopping":
-      return "bg-yellow-500";
-    case "utilities":
-      return "bg-gray-500";
-    case "health":
-      return "bg-pink-500";
-    case "education":
-      return "bg-orange-500";
-    case "travel":
-      return "bg-teal-500";
-    case "savings":
-      return "bg-blue-600";
+// Get icon based on category name or icon name
+export const getCategoryIcon = (category: string) => {
+  // First, check if we're receiving the icon name directly
+  switch (category.toLowerCase()) {
+    case 'food':
+      return <Utensils className="h-4 w-4" />;
+    case 'car':
+    case 'transportation':
+      return <Car className="h-4 w-4" />;
+    case 'education':
+      return <GraduationCap className="h-4 w-4" />;
+    case 'entertainment':
+      return <Film className="h-4 w-4" />;
+    case 'shopping':
+      return <ShoppingBag className="h-4 w-4" />;
+    case 'utilities':
+      return <Plug className="h-4 w-4" />;
+    case 'health':
+      return <Heart className="h-4 w-4" />;
+    case 'travel':
+      return <Plane className="h-4 w-4" />;
+    case 'savings':
+      return <PiggyBank className="h-4 w-4" />;
+    case 'home':
+      return <Home className="h-4 w-4" />;
+    case 'other':
     default:
-      return "bg-indigo-500";
+      return <Grid className="h-4 w-4" />;
   }
 };
 
-// Category icons - Fixed to return React elements instead of component classes
-export const getCategoryIcon = (category: string): React.ReactElement => {
-  switch (category) {
-    case "food":
-      return React.createElement(Pizza, { size: 16 });
-    case "transportation":
-      return React.createElement(Bus, { size: 16 });
-    case "entertainment":
-      return React.createElement(Gamepad2, { size: 16 });
-    case "shopping":
-      return React.createElement(ShoppingCart, { size: 16 });
-    case "utilities":
-      return React.createElement(Lightbulb, { size: 16 });
-    case "health":
-      return React.createElement(HeartPulse, { size: 16 });
-    case "education":
-      return React.createElement(GraduationCap, { size: 16 });
-    case "travel":
-      return React.createElement(Trees, { size: 16 });
-    case "savings":
-      return React.createElement(Wallet, { size: 16 }); // Replaced Bank with Wallet
+// Get color class based on category
+export const getCategoryColor = (category: string) => {
+  switch (category.toLowerCase()) {
+    case 'food':
+      return 'text-red-400';
+    case 'transportation':
+      return 'text-blue-400';
+    case 'entertainment':
+      return 'text-purple-400';
+    case 'shopping':
+      return 'text-yellow-400';
+    case 'utilities':
+      return 'text-teal-400';
+    case 'health':
+      return 'text-green-400';
+    case 'education':
+      return 'text-orange-400';
+    case 'travel':
+      return 'text-pink-400';
+    case 'savings':
+      return 'text-blue-400';
+    case 'other':
     default:
-      return React.createElement(IndianRupee, { size: 16 });
+      return 'text-neon-purple';
   }
 };
 
-// Function to get current date in Nepal time
-export const getCurrentDateInNepalTime = (): string => {
-  const now = new Date();
-  
-  // Nepal is UTC+5:45
-  const nepalOffsetHours = 5;
-  const nepalOffsetMinutes = 45;
-  
-  // Get the UTC time
-  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  
-  // Create a new date with Nepal time
-  const nepalTime = new Date(utc + (3600000 * nepalOffsetHours) + (60000 * nepalOffsetMinutes));
-  
-  // Format to ISO string and return the date part
-  return nepalTime.toISOString();
-};
-
-// Group transactions by date for display in TransactionList
-export const groupTransactionsByDate = (transactions: any[]): Record<string, any[]> => {
-  const grouped: Record<string, any[]> = {};
-  
-  transactions.forEach(transaction => {
-    const date = new Date(transaction.date);
-    const formattedDate = date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    
-    if (!grouped[formattedDate]) {
-      grouped[formattedDate] = [];
+export const groupTransactionsByDate = (transactions: any[]) => {
+  return transactions.reduce((groups: any, transaction: any) => {
+    const date = formatDate(transaction.date);
+    if (!groups[date]) {
+      groups[date] = [];
     }
-    
-    grouped[formattedDate].push(transaction);
-  });
-  
-  // Sort dates newest first
-  return Object.keys(grouped)
-    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-    .reduce((result: Record<string, any[]>, key) => {
-      result[key] = grouped[key];
-      return result;
-    }, {});
+    groups[date].push(transaction);
+    return groups;
+  }, {});
 };

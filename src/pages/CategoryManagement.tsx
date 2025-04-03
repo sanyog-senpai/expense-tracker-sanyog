@@ -1,209 +1,296 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription,
-  CardFooter 
-} from '@/components/ui/card';
-import { ChevronLeft, Plus, Trash2, Save } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useCategories, CATEGORY_COLORS, CATEGORY_ICONS } from '@/context/CategoryContext';
+import { getCategoryIcon } from '@/utils/dateUtils';
 import { motion } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
-import { getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
-import { cn } from '@/lib/utils';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
-// Create/update CategoryContext
-import { useCategories } from '@/context/CategoryContext';
+import { fadeIn, slideUp } from '@/lib/animations';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const CategoryManagement = () => {
-  const { categories, addCategory, removeCategory } = useCategories();
+  const { categories, addCategory, removeCategory, isDefaultCategory, categoryConfigs } = useCategories();
   const [newCategory, setNewCategory] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const handleAddCategory = () => {
-    // Basic validation
-    if (!newCategory.trim()) {
-      setError('Category name cannot be empty');
-      return;
-    }
+  const [selectedColor, setSelectedColor] = useState('purple');
+  const [selectedIcon, setSelectedIcon] = useState('other');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState('');
 
-    // Check if category already exists
-    if (categories.includes(newCategory.toLowerCase())) {
-      setError('This category already exists');
+  const handleAddCategory = () => {
+    if (!newCategory.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a category name",
+        variant: "destructive",
+      });
       return;
     }
     
-    // Add category
-    addCategory(newCategory.toLowerCase());
+    if (categories.includes(newCategory.toLowerCase().trim())) {
+      toast({
+        title: "Error",
+        description: "This category already exists",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    addCategory(newCategory.trim(), selectedColor, selectedIcon);
     setNewCategory('');
-    setError('');
     
     toast({
-      title: 'Category added',
-      description: `"${newCategory}" has been added to your categories.`
+      title: "Category added",
+      description: `${newCategory} has been added successfully`,
     });
   };
   
-  const handleDeleteCategory = (category: string) => {
-    removeCategory(category);
-    
-    toast({
-      title: 'Category removed',
-      description: `"${category}" has been removed from your categories.`
-    });
+  const handleDeleteConfirm = () => {
+    if (categoryToDelete) {
+      removeCategory(categoryToDelete);
+      setIsDeleteDialogOpen(false);
+      setCategoryToDelete('');
+      
+      toast({
+        title: "Category deleted",
+        description: `${categoryToDelete} has been deleted successfully`,
+      });
+    }
+  };
+  
+  const openDeleteDialog = (category: string) => {
+    setCategoryToDelete(category);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  // Helper function to get the background color class for the category
+  const getCategoryColorClass = (category: string) => {
+    const config = categoryConfigs[category] || { color: 'purple' };
+    switch (config.color) {
+      case 'red': return 'bg-red-500/20 text-red-400';
+      case 'green': return 'bg-green-500/20 text-green-400';
+      case 'blue': return 'bg-blue-500/20 text-blue-400';
+      case 'yellow': return 'bg-yellow-500/20 text-yellow-400';
+      case 'purple': return 'bg-neon-purple/20 text-neon-purple';
+      case 'pink': return 'bg-neon-pink/20 text-neon-pink';
+      case 'orange': return 'bg-orange-500/20 text-orange-400';
+      case 'teal': return 'bg-teal-500/20 text-teal-400';
+      default: return 'bg-neon-purple/20 text-neon-purple';
+    }
+  };
+  
+  // Generate a preview of the selected color and icon
+  const getColorPreview = (color: string) => {
+    switch (color) {
+      case 'red': return 'bg-red-500';
+      case 'green': return 'bg-green-500';
+      case 'blue': return 'bg-blue-500';
+      case 'yellow': return 'bg-yellow-500';
+      case 'purple': return 'bg-neon-purple';
+      case 'pink': return 'bg-neon-pink';
+      case 'orange': return 'bg-orange-500';
+      case 'teal': return 'bg-teal-500';
+      default: return 'bg-neon-purple';
+    }
   };
   
   return (
-    <div className="min-h-screen bg-purple-dark p-4 md:p-6">
-      <div className="max-w-lg mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Button 
-            variant="outline" 
-            className="bg-white/5 border-white/10 text-white hover:bg-white/10 mb-6"
-            onClick={() => navigate('/')}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </motion.div>
+    <Layout>
+      <motion.div 
+        initial="initial"
+        animate="animate"
+        variants={fadeIn}
+        className="pb-32"
+      >
+        <div className="flex items-center mb-6">
+          <Link to="/?tab=transactions">
+            <Button variant="ghost" size="icon" className="mr-2 text-white/70 hover:text-white hover:bg-white/10">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold text-white">Manage Categories</h1>
+        </div>
         
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          variants={slideUp}
+          className="mb-8"
         >
-          <Card className="border-white/10 overflow-hidden bg-white/5 mb-6">
-            <CardHeader>
-              <CardTitle className="text-white">Manage Categories</CardTitle>
-              <CardDescription className="text-white/70">
-                Add or remove transaction categories
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
+          <Card className="bg-white/5 border-white/10">
+            <CardContent className="p-4 md:p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Add New Category</h2>
+              
+              <div className="grid gap-4">
+                <div>
+                  <Label htmlFor="category" className="text-white/70 mb-1.5 block text-xs">Category Name</Label>
                   <Input
-                    placeholder="New category name"
+                    id="category"
+                    placeholder="Enter category name"
                     value={newCategory}
-                    onChange={(e) => {
-                      setNewCategory(e.target.value);
-                      if (error) setError('');
-                    }}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50"
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white focus:border-neon-purple/50"
                   />
-                  <Button 
-                    onClick={handleAddCategory}
-                    className="bg-neon-purple hover:bg-neon-purple/90 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add
-                  </Button>
                 </div>
                 
-                {error && (
-                  <p className="text-xs text-red-400 mt-1">{error}</p>
-                )}
-                
-                <div className="bg-white/5 rounded-lg border border-white/10 p-4">
-                  <h3 className="text-sm text-white font-medium mb-3">Your Categories</h3>
-                  
-                  {categories.length === 0 ? (
-                    <p className="text-white/50 text-xs py-2">No custom categories yet</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {categories.map((category) => (
-                        <motion.div 
-                          key={category}
-                          className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -5 }}
-                          transition={{ duration: 0.2 }}
-                          whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.07)' }}
-                        >
-                          <div className="flex items-center">
-                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center mr-3', getCategoryColor(category))}>
-                              <span className="text-base">{getCategoryIcon(category)}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="color" className="text-white/70 mb-1.5 block text-xs">Category Color</Label>
+                    <Select
+                      value={selectedColor}
+                      onValueChange={setSelectedColor}
+                    >
+                      <SelectTrigger
+                        id="color"
+                        className="bg-white/5 border-white/10 text-white focus:ring-neon-purple/20 focus:ring-offset-0"
+                      >
+                        <SelectValue placeholder="Select color" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-purple-dark border-white/10">
+                        {CATEGORY_COLORS.map((color) => (
+                          <SelectItem key={color.value} value={color.value}>
+                            <div className="flex items-center">
+                              <div className={`w-4 h-4 rounded-full mr-2 ${getColorPreview(color.value)}`}></div>
+                              <span>{color.name}</span>
                             </div>
-                            <span className="text-white capitalize">{category}</span>
-                          </div>
-                          
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-white/50 hover:text-red-400 hover:bg-red-500/10 h-8 w-8"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-purple-dark border-white/10">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-white">Delete Category</AlertDialogTitle>
-                                <AlertDialogDescription className="text-white/70">
-                                  Are you sure you want to delete the "{category}" category? This will not delete any transactions with this category.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-transparent text-white/70 border-white/10 hover:bg-white/5 hover:text-white">Cancel</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  className="bg-red-500 hover:bg-red-600 text-white"
-                                  onClick={() => handleDeleteCategory(category)}
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="icon" className="text-white/70 mb-1.5 block text-xs">Category Icon</Label>
+                    <Select
+                      value={selectedIcon}
+                      onValueChange={setSelectedIcon}
+                    >
+                      <SelectTrigger
+                        id="icon"
+                        className="bg-white/5 border-white/10 text-white focus:ring-neon-purple/20 focus:ring-offset-0"
+                      >
+                        <SelectValue placeholder="Select icon" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-purple-dark border-white/10">
+                        {CATEGORY_ICONS.map((icon) => (
+                          <SelectItem key={icon.value} value={icon.value}>
+                            <div className="flex items-center">
+                              <div className="mr-2 text-white">{getCategoryIcon(icon.value)}</div>
+                              <span>{icon.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+                
+                <div>
+                  <div className="flex items-center space-x-3 mt-2 mb-4">
+                    <div className="text-sm text-white/70">Preview:</div>
+                    <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full ${getCategoryColorClass(newCategory || selectedColor)}`}>
+                      <span>{getCategoryIcon(selectedIcon)}</span>
+                      <span>{newCategory || 'Category Name'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={handleAddCategory}
+                  className="bg-neon-purple hover:bg-neon-purple/90 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Category
+                </Button>
               </div>
             </CardContent>
-            
-            <CardFooter className="bg-white/5 px-6 py-4 flex justify-between">
-              <p className="text-xs text-white/60">
-                Default categories cannot be removed
-              </p>
-              <Button
-                variant="outline"
-                className="bg-white/10 hover:bg-white/15 border-white/10 text-white"
-                onClick={() => navigate('/')}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Done
-              </Button>
-            </CardFooter>
           </Card>
         </motion.div>
-      </div>
-    </div>
+        
+        <motion.div variants={slideUp} className="space-y-4">
+          <h2 className="text-lg font-semibold text-white">Your Categories</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {categories.map((category) => {
+              const isDefault = isDefaultCategory(category);
+              const config = categoryConfigs[category] || { color: 'purple', icon: 'other' };
+              
+              return (
+                <motion.div 
+                  key={category}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Card className={`bg-white/5 hover:bg-white/10 border-white/10 transition-all border-l-4 ${getCategoryColorClass(category).includes('bg-') ? getCategoryColorClass(category).replace('text-', 'border-l-').replace('/20', '') : 'border-l-neon-purple'}`}>
+                    <CardContent className="p-3 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${getCategoryColorClass(category)}`}>
+                          {getCategoryIcon(config.icon || category)}
+                        </div>
+                        <div>
+                          <p className="text-white font-medium capitalize">{category}</p>
+                          {isDefault && (
+                            <p className="text-2xs text-white/50">Default category</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {!isDefault && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openDeleteDialog(category)}
+                          className="text-white/40 hover:text-red-400 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </motion.div>
+      
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="bg-purple-dark border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-white">Confirm Deletion</DialogTitle>
+            <DialogDescription className="text-white/70">
+              Are you sure you want to delete the "{categoryToDelete}" category? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="border-white/10 text-white/70 hover:bg-white/5 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Layout>
   );
 };
 

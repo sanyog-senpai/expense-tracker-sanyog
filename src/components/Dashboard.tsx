@@ -66,6 +66,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                       value={stats.balance}
                       formatter={(value) => formatCurrency(value)}
                       className={`${isMobile ? "text-2xl" : "text-3xl"} font-bold text-white`}
+                      duration={800} // Faster animation as requested
                     />
                   </div>
                 </div>
