@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -37,12 +38,18 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
   
   // Reset form and set default values when modal opens
   useEffect(() => {
-    // Set current date and time as default (Nepal Standard Time - UTC+05:45)
+    // Get current time in Nepal (Kathmandu timezone)
     const now = new Date();
     
-    // Correctly set Nepal Time (Kathmandu timezone)
-    const nepalTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kathmandu' }));
-    const currentDateTime = nepalTime.toISOString().slice(0, 16);
+    // Format the date string properly for Nepal time (UTC+05:45)
+    const year = now.toLocaleString('en-US', { year: 'numeric', timeZone: 'Asia/Kathmandu' });
+    const month = now.toLocaleString('en-US', { month: '2-digit', timeZone: 'Asia/Kathmandu' });
+    const day = now.toLocaleString('en-US', { day: '2-digit', timeZone: 'Asia/Kathmandu' });
+    const hours = now.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'Asia/Kathmandu' });
+    const minutes = now.toLocaleString('en-US', { minute: '2-digit', timeZone: 'Asia/Kathmandu' });
+    
+    // Create the date-time string in ISO format
+    const kathmandDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
     
     if (editTransaction) {
       setDescription(editTransaction.description);
@@ -57,7 +64,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({
       setDescription('');
       setAmount('');
       setCategory('food');
-      setDate(currentDateTime);
+      setDate(kathmandDateTime);
       setIsExpense(true);
       setIsSavings(false);
       setSavingsPurpose('');
