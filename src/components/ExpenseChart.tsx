@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { Transaction } from '@/context/TransactionContext';
@@ -10,7 +9,7 @@ import { fadeIn, scaleIn } from '@/lib/animations';
 import { formatCurrency, formatTime, getCategoryIcon } from '@/utils/dateUtils';
 import { format, parseISO } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import ChartTooltip from '@/components/ChartTooltip';
 import { Card } from '@/components/ui/card';
 
 interface ExpenseChartProps {
@@ -262,59 +261,6 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   // Enhanced color palette - more vibrant and distinguishable
   const COLORS = ['#8b5cf6', '#ec4899', '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
   
-  const renderTooltipContent = (props: any) => {
-    if (props.payload && props.payload.length > 0) {
-      const payload = props.payload;
-      const { name } = payload[0].payload;
-      
-      return (
-        <div className="bg-[#1A1A2E]/95 border border-neon-purple/40 rounded-lg shadow-xl p-3 max-w-[180px]">
-          <div className="flex items-center border-b border-white/10 pb-1.5 mb-1.5">
-            <div className="w-2 h-2 rounded-full mr-1.5" 
-                style={{ background: payload[0].fill || payload[0].color }}></div>
-            <p className="text-white font-medium text-xs truncate">{name}</p>
-          </div>
-          
-          {payload.map((entry: any, index: number) => {
-            // Skip the 'name' field and count fields for the main display
-            if (entry.dataKey === 'name' || entry.dataKey.includes('Count')) return null;
-            
-            // Get transaction count if available
-            const count = entry.payload[`${entry.dataKey}Count`] || entry.payload.count;
-            
-            return (
-              <div 
-                key={`item-${index}`}
-                className="flex justify-between items-center my-1 border-b border-white/5 pb-1 last:border-0"
-              >
-                <span className="text-2xs font-medium text-white/70">{entry.name}:</span>
-                <span className="text-xs font-semibold text-white">
-                  {entry.value === 0 ? '—' : `रु ${entry.value.toLocaleString()}`}
-                </span>
-                {count && (
-                  <div className="w-full text-2xs text-white/40 mt-0.5 text-right">
-                    {count} txn{count !== 1 ? 's' : ''}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-    return null;
-  };
-  
-  if (transactions.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-[200px] bg-white/5 rounded-xl">
-        <p className="text-white/70 text-sm">No data to display</p>
-      </div>
-    );
-  }
-  
-  const showComparisonSelector = chartType === 'bar';
-  
   // Fixed currency formatter functions
   const formatYAxisTick = (value: number) => {
     if (value >= 1000) {
@@ -482,7 +428,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                     />
                   ))}
                 </Pie>
-                <Tooltip content={renderTooltipContent} />
+                <Tooltip content={<ChartTooltip />} />
                 <Legend 
                   formatter={(value: string) => <span className="text-white/90 text-xs md:text-sm">{value}</span>}
                   iconType="circle"
@@ -503,7 +449,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   tickFormatter={formatYAxisTick}
                   domain={[0, 'dataMax + 500']}
                 />
-                <Tooltip content={renderTooltipContent} />
+                <Tooltip content={<ChartTooltip />} />
                 <Bar 
                   dataKey="value" 
                   radius={[4, 4, 0, 0]}
@@ -542,7 +488,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   tickFormatter={formatYAxisTick}
                   domain={[0, 'dataMax + 500']}
                 />
-                <Tooltip content={renderTooltipContent} />
+                <Tooltip content={<ChartTooltip />} />
                 <Bar 
                   dataKey="value" 
                   radius={[4, 4, 0, 0]}
@@ -581,7 +527,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
                   tickFormatter={formatYAxisTick}
                   domain={[0, 'dataMax + 500']}
                 />
-                <Tooltip content={renderTooltipContent} />
+                <Tooltip content={<ChartTooltip />} />
                 <Bar 
                   dataKey="expenses" 
                   fill="#ff6b8b" 
