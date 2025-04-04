@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { Transaction } from '@/context/TransactionContext';
@@ -47,6 +48,9 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({ transactions }) => {
   const [dataType, setDataType] = useState<'expenses' | 'income' | 'savings'>('expenses');
   const [comparisonType, setComparisonType] = useState<'none' | 'month' | 'year' | 'combined'>('none');
   const [yearFilter, setYearFilter] = useState<string>(new Date().getFullYear().toString());
+  
+  // Define showComparisonSelector variable - this is what was missing
+  const showComparisonSelector = chartType === 'bar';
   
   // Get available years from transactions
   const availableYears = useMemo(() => {
