@@ -10,9 +10,22 @@ import { TransactionProvider, useTransactions, Transaction } from '@/context/Tra
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn, pageTransition, staggeredContainer } from '@/lib/animations';
+import { Button } from '@/components/ui/button';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from 'lucide-react';
 
 const ExpenseTrackerApp = () => {
-  const { state, addTransaction, deleteTransaction, updateTransaction } = useTransactions();
+  const { state, addTransaction, deleteTransaction, updateTransaction, clearAllTransactions } = useTransactions();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
   const { toast } = useToast();
@@ -68,6 +81,14 @@ const ExpenseTrackerApp = () => {
     setEditingTransaction(undefined);
   };
 
+  const handleClearAllTransactions = () => {
+    clearAllTransactions();
+    toast({
+      title: "All transactions cleared",
+      description: "Your transaction history has been cleared.",
+    });
+  };
+
   const handleTabChange = (tab: 'dashboard' | 'transactions') => {
     setActiveTab(tab);
     // Update URL to reflect tab change
@@ -97,6 +118,9 @@ const ExpenseTrackerApp = () => {
     }
   };
   
+  // Show empty state when no transactions
+  const hasNoTransactions = state.transactions.length === 0;
+  
   return (
     <Layout onAddClick={handleAddClick}>
       <motion.div
@@ -105,7 +129,44 @@ const ExpenseTrackerApp = () => {
         variants={staggeredContainer(0.1, 0.2)}
       >
         <motion.div variants={fadeIn}>
-          <Header onAddClick={handleAddClick} />
+          <div className="flex justify-between items-center">
+            <Header onAddClick={handleAddClick} />
+            
+            {/* Only show clear all button when there are transactions */}
+            {!hasNoTransactions && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-white/5 border-white/10 text-red-400 hover:bg-red-500/10 hover:text-red-400"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Clear All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-purple-dark border-white/10">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-white">Clear All Transactions?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-white/70">
+                      This will delete all of your transaction history. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="bg-transparent text-white/70 border-white/10 hover:bg-white/5 hover:text-white">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleClearAllTransactions} 
+                      className="bg-red-500 hover:bg-red-600 text-white"
+                    >
+                      Clear All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </motion.div>
         
         <AnimatePresence mode="wait">
