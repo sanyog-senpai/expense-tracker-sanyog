@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
@@ -35,21 +34,21 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
   
   const neoBgColor = getNeoBgColor(colorClass);
   
-  // For very long category names, allow them to be displayed
+  // For category names, keep them short and capitalize first letter
   const displayText = () => {
-    const capitalized = category.charAt(0).toUpperCase() + category.slice(1);
-    return capitalized;
+    // Capitalize first letter only
+    return category.charAt(0).toUpperCase() + category.slice(1);
   };
   
   // Apply size classes based on props
-  let sizeClasses = 'text-2xs md:text-xs py-1 px-2.5';
+  let sizeClasses = 'text-2xs md:text-xs py-1 px-2';
   
   if (small) {
-    sizeClasses = 'text-3xs py-0.5 px-2 leading-tight';
+    sizeClasses = 'text-3xs py-0.5 px-1.5 leading-tight';
   }
   
   if (extraSmall) {
-    sizeClasses = 'text-3xs py-0.5 px-1.5 leading-tight';
+    sizeClasses = 'text-3xs py-0.5 px-1 leading-tight';
   }
   
   // Get the icon component
@@ -63,14 +62,13 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
         'font-medium rounded-full',
         'backdrop-blur-md border',
         'transition-all duration-300 hover:scale-105',
-        'shadow-sm',
-        showIcon ? 'flex items-center' : '',
+        'shadow-sm inline-flex items-center',
         className
       )}
     >
       {showIcon && (
-        <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center mr-1.5 bg-white/20">
-          {React.createElement(IconComponent, { size: 12, className: "text-white" })}
+        <div className="w-3 h-3 rounded-full flex items-center justify-center mr-1 bg-white/20">
+          {React.createElement(IconComponent, { size: 10, className: "text-white" })}
         </div>
       )}
       {displayText()}
