@@ -35,7 +35,8 @@ type TransactionAction =
   | { type: 'ADD_TRANSACTION', payload: Transaction }
   | { type: 'DELETE_TRANSACTION', payload: string }
   | { type: 'UPDATE_TRANSACTION', payload: Transaction }
-  | { type: 'SET_TRANSACTIONS', payload: Transaction[] };
+  | { type: 'SET_TRANSACTIONS', payload: Transaction[] }
+  | { type: 'CLEAR_TRANSACTIONS' };  // New action type
 
 // Initial state
 const initialState: TransactionState = {
@@ -49,6 +50,7 @@ interface TransactionContextType {
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   deleteTransaction: (id: string) => void;
   updateTransaction: (transaction: Transaction) => void;
+  clearAllTransactions: () => void; // New function to clear all transactions
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
@@ -111,6 +113,14 @@ function transactionReducer(state: TransactionState, action: TransactionAction):
       return {
         ...state,
         transactions: action.payload,
+        loading: false
+      };
+    
+    case 'CLEAR_TRANSACTIONS': // Handle the new action
+      persistData([]);
+      return {
+        ...state,
+        transactions: [],
         loading: false
       };
       
@@ -190,10 +200,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (persistedTransactions && persistedTransactions.length > 0) {
       dispatch({ type: 'SET_TRANSACTIONS', payload: persistedTransactions });
     } else {
-      // If no persisted data, load sample data
-      dispatch({ type: 'SET_TRANSACTIONS', payload: sampleTransactions });
-      // Save sample data to localStorage
-      persistData(sampleTransactions);
+      // Initialize with empty array instead of sample data
+      dispatch({ type: 'SET_TRANSACTIONS', payload: [] });
     }
   }, []);
 
@@ -213,6 +221,11 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
   const updateTransaction = (transaction: Transaction) => {
     dispatch({ type: 'UPDATE_TRANSACTION', payload: transaction });
   };
+  
+  // New function to clear all transactions
+  const clearAllTransactions = () => {
+    dispatch({ type: 'CLEAR_TRANSACTIONS' });
+  };
 
   return (
     <TransactionContext.Provider
@@ -220,7 +233,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
         state,
         addTransaction,
         deleteTransaction,
-        updateTransaction
+        updateTransaction,
+        clearAllTransactions
       }}
     >
       {children}
