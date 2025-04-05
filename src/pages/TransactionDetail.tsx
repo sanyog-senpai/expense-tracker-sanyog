@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTransactions, Transaction } from '@/context/TransactionContext';
@@ -6,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronLeft, Calendar, Clock, Edit, Trash2, ArrowDown, ArrowUp } from 'lucide-react';
 import CategoryPill from '@/components/CategoryPill';
-import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import AddTransaction from '@/components/AddTransaction';
 import { useToast } from '@/components/ui/use-toast';
@@ -177,7 +177,7 @@ const TransactionDetail = () => {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2 mb-1">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-white/10 shadow-inner`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-white/10`}>
                       {React.createElement(getCategoryIcon(transaction.category), { 
                         size: 18,
                         className: getCategoryColor(transaction.category)
@@ -189,17 +189,17 @@ const TransactionDetail = () => {
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <div className="flex items-center space-x-3">
-                      <Badge variant="outline" className="flex items-center">
-                        <Calendar className="h-3 w-3 mr-1.5 opacity-70" />
+                      <div className="flex items-center text-white/70 text-xs">
+                        <Calendar className="h-3.5 w-3.5 mr-1.5" />
                         {formatDate(transaction.date)}
-                      </Badge>
-                      <Badge variant="outline" className="flex items-center">
-                        <Clock className="h-3 w-3 mr-1.5 opacity-70" />
+                      </div>
+                      <div className="flex items-center text-white/70 text-xs">
+                        <Clock className="h-3.5 w-3.5 mr-1.5" />
                         {formatTime(transaction.date)}
-                      </Badge>
+                      </div>
                     </div>
                     <div>
-                      <CategoryPill category={transaction.category} showIcon className="self-start mt-1.5 shadow-md" />
+                      <CategoryPill category={transaction.category} showIcon className="self-start mt-1" />
                     </div>
                   </div>
                 </div>
@@ -253,23 +253,22 @@ const TransactionDetail = () => {
               
               <div className="flex flex-col items-center md:flex-row md:justify-between bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10 mt-5">
                 <div className="mb-3 md:mb-0">
-                  <Badge 
-                    variant={transaction.isExpense ? (transaction.isSavings ? "savings" : "expense") : "income"} 
-                    className="inline-flex items-center mb-2"
-                  >
+                  <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 mb-2">
                     {transaction.isExpense ? 
-                      <ArrowDown className="h-3.5 w-3.5 mr-1.5" /> : 
-                      <ArrowUp className="h-3.5 w-3.5 mr-1.5" />
+                      <ArrowDown className="h-3.5 w-3.5 text-red-400 mr-1.5" /> : 
+                      <ArrowUp className="h-3.5 w-3.5 text-green-400 mr-1.5" />
                     }
-                    {getTypeText()}
-                  </Badge>
+                    <span className={`text-xs font-medium ${getTextColor()}`}>
+                      {getTypeText()}
+                    </span>
+                  </div>
                   <p className={`text-2xl md:text-3xl font-bold ${getTextColor()}`}>
                     {formatCurrency(transaction.amount)}
                   </p>
                 </div>
                 
                 {transaction.isSavings && transaction.savingsPurpose && (
-                  <div className="bg-blue-500/20 px-3 py-2 rounded-md border border-blue-400/30 shadow-inner">
+                  <div className="bg-blue-500/20 px-3 py-2 rounded-md border border-blue-400/30">
                     <p className="text-white/60 text-2xs mb-0.5">Savings Purpose</p>
                     <p className="text-blue-300 text-sm font-medium">{transaction.savingsPurpose}</p>
                   </div>
@@ -278,16 +277,16 @@ const TransactionDetail = () => {
               
               {/* Balance Before & After Section */}
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10 shadow-inner">
+                <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
                   <p className="text-white/50 text-2xs mb-1">Balance Before</p>
                   <p className="text-white/90 text-sm font-semibold">{formatCurrency(balanceDetails.beforeBalance)}</p>
                 </div>
                 
-                <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10 shadow-inner">
+                <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
                   <p className="text-white/50 text-2xs mb-1">Balance After</p>
                   <div className="flex items-center">
                     <p className="text-white/90 text-sm font-semibold">{formatCurrency(balanceDetails.afterBalance)}</p>
-                    <div className="flex items-center ml-2 text-2xs px-1.5 py-0.5 bg-white/5 rounded-full border border-white/10">
+                    <div className="flex items-center ml-2 text-2xs px-1.5 py-0.5 bg-white/5 rounded-full">
                       {getBalanceChangeIcon()}
                       <span className={`ml-0.5 ${getTextColor()}`}>
                         {formatCurrency(Math.abs(balanceDetails.afterBalance - balanceDetails.beforeBalance))}

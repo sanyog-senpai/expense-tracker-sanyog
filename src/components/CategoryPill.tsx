@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { getCategoryColor, getCategoryIcon } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
@@ -21,34 +22,34 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
   const colorClass = getCategoryColor(category);
   const isMobile = useIsMobile();
   
-  // Map category colors to our futuristic neon colors with improved contrast
+  // Map category colors to our futuristic neon colors
   const getNeoBgColor = (colorClass: string) => {
-    if (colorClass.includes('red')) return 'bg-red-500/30 text-red-300 border-red-400/30';
-    if (colorClass.includes('blue')) return 'bg-blue-500/30 text-blue-300 border-blue-400/30';
-    if (colorClass.includes('green')) return 'bg-green-500/30 text-green-300 border-green-400/30';
-    if (colorClass.includes('yellow')) return 'bg-yellow-500/30 text-yellow-300 border-yellow-400/30';
-    if (colorClass.includes('purple')) return 'bg-neon-purple/30 text-neon-purple border-neon-purple/30';
-    if (colorClass.includes('pink')) return 'bg-neon-pink/30 text-neon-pink border-neon-pink/30';
-    return 'bg-neon-purple/30 text-neon-purple border-neon-purple/30';
+    if (colorClass.includes('red')) return 'bg-red-500/20 text-red-400';
+    if (colorClass.includes('blue')) return 'bg-blue-500/20 text-blue-400';
+    if (colorClass.includes('green')) return 'bg-green-500/20 text-green-400';
+    if (colorClass.includes('yellow')) return 'bg-yellow-500/20 text-yellow-400';
+    if (colorClass.includes('purple')) return 'bg-neon-purple/20 text-neon-purple';
+    if (colorClass.includes('pink')) return 'bg-neon-pink/20 text-neon-pink';
+    return 'bg-neon-purple/20 text-neon-purple';
   };
   
   const neoBgColor = getNeoBgColor(colorClass);
   
-  // For category names, keep them short and capitalize first letter
+  // For very long category names, allow them to be displayed
   const displayText = () => {
-    // Capitalize first letter only
-    return category.charAt(0).toUpperCase() + category.slice(1);
+    const capitalized = category.charAt(0).toUpperCase() + category.slice(1);
+    return capitalized;
   };
   
   // Apply size classes based on props
-  let sizeClasses = 'text-2xs md:text-xs py-1 px-2';
+  let sizeClasses = 'text-2xs md:text-xs py-0.5 px-2';
   
   if (small) {
-    sizeClasses = 'text-3xs py-0.5 px-1.5 leading-tight';
+    sizeClasses = 'text-3xs py-0 px-1.5 leading-tight';
   }
   
   if (extraSmall) {
-    sizeClasses = 'text-3xs py-0.5 px-1 leading-tight';
+    sizeClasses = 'text-3xs py-0 px-1 leading-tight';
   }
   
   // Get the icon component
@@ -60,15 +61,14 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
         neoBgColor,
         sizeClasses,
         'font-medium rounded-full',
-        'backdrop-blur-md border',
-        'transition-all duration-300 hover:scale-105',
-        'shadow-sm inline-flex items-center',
+        'backdrop-blur-sm',
+        showIcon ? 'flex items-center' : '',
         className
       )}
     >
       {showIcon && (
-        <div className="w-3 h-3 rounded-full flex items-center justify-center mr-1 bg-white/20">
-          {React.createElement(IconComponent, { size: 10, className: "text-white" })}
+        <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center mr-1.5 bg-white/20">
+          {React.createElement(IconComponent, { size: 12 })}
         </div>
       )}
       {displayText()}

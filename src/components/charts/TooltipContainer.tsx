@@ -7,7 +7,7 @@ interface TooltipContainerProps {
 
 const TooltipContainer: React.FC<TooltipContainerProps> = ({ children }) => {
   return (
-    <div className="bg-purple-dark/95 backdrop-blur-lg p-4 rounded-lg border border-white/20 shadow-xl max-w-[230px] animate-fade-in transition-all duration-300">
+    <div className="bg-purple-dark/95 backdrop-blur-lg p-4 rounded-lg border border-white/20 shadow-xl max-w-[230px] animate-fade-in">
       {children}
     </div>
   );
