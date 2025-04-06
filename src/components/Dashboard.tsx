@@ -9,6 +9,7 @@ import ExpenseChart from './ExpenseChart';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { fadeIn, slideUp } from '@/lib/animations';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardProps {
   transactions: Transaction[];
@@ -16,6 +17,8 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  
   const stats = useMemo(() => {
     const totalIncome = transactions
       .filter(t => !t.isExpense)
@@ -33,6 +36,10 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
     
     return { totalIncome, totalExpenses, totalSavings, balance };
   }, [transactions]);
+  
+  const handleCardClick = () => {
+    navigate('/financial-details');
+  };
   
   return (
     <motion.div 
@@ -66,13 +73,17 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
                       value={stats.balance}
                       formatter={(value) => formatCurrency(value)}
                       className={`${isMobile ? "text-2xl" : "text-3xl"} font-bold text-white`}
-                      duration={800} // Faster animation as requested
+                      duration={800}
                     />
                   </div>
                 </div>
-                <div className="p-2.5 rounded-full bg-gradient-to-br from-neon-purple/30 to-neon-blue/20 backdrop-blur-md border border-white/10 shadow-lg">
+                <button 
+                  onClick={handleCardClick}
+                  className="p-2.5 rounded-full bg-gradient-to-br from-neon-purple/30 to-neon-blue/20 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-purple-500/30 hover:from-neon-purple/40 hover:to-neon-blue/30 transition-all duration-300 transform hover:scale-105 active:scale-95"
+                  aria-label="View financial details"
+                >
                   <CreditCard className="h-5 w-5 md:h-6 md:w-6 text-white" />
-                </div>
+                </button>
               </div>
               
               {/* Financial Summary Cards */}

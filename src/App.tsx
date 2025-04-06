@@ -7,6 +7,7 @@ import NotFound from './pages/NotFound';
 import TransactionDetail from './pages/TransactionDetail';
 import Index from './pages/Index';
 import CategoryManagement from './pages/CategoryManagement';
+import FinancialDetails from './pages/FinancialDetails';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/transaction/:id" element={<TransactionDetail />} />
             <Route path="/categories" element={<CategoryManagement />} />
+            <Route path="/financial-details" element={<FinancialDetails />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TransactionProvider>
