@@ -66,14 +66,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         
-        <style jsx>{`
-          @keyframes ripple {
-            to {
-              transform: scale(4);
-              opacity: 0;
-            }
-          }
-        `}</style>
+        {/* Removed the inline style jsx element and relying on App.css for the animation */}
       </div>
     )
   }
