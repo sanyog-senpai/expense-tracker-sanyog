@@ -49,6 +49,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         onClick={handleInputClick}
       >
+        {/* Note: We only render the icon here if directly provided to the Input component.
+            In AddTransaction.tsx, icons are added via absolute positioning outside the Input. */}
         {icon && (
           <div className="absolute left-3 z-10 text-muted-foreground group-hover:text-primary transition-colors icon-bounce">
             {icon}
