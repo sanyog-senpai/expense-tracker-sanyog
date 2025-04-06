@@ -9,7 +9,7 @@ import AddTransaction from '@/components/AddTransaction';
 import { TransactionProvider, useTransactions, Transaction } from '@/context/TransactionContext';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fadeIn, pageTransition, staggeredContainer } from '@/lib/animations';
+import { pageVariants, containerVariants } from '@/lib/pageTransitions';
 
 const ExpenseTrackerApp = () => {
   const { state, addTransaction, deleteTransaction, updateTransaction } = useTransactions();
@@ -70,30 +70,10 @@ const ExpenseTrackerApp = () => {
 
   const handleTabChange = (tab: 'dashboard' | 'transactions') => {
     setActiveTab(tab);
-    // Update URL to reflect tab change
     if (tab === 'dashboard') {
       navigate('/');
     } else {
       navigate('/?tab=transactions');
-    }
-  };
-  
-  const pageVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1] 
-      }
-    },
-    exit: { 
-      opacity: 0, 
-      y: -20,
-      transition: { 
-        duration: 0.3 
-      }
     }
   };
   
@@ -102,9 +82,10 @@ const ExpenseTrackerApp = () => {
       <motion.div
         initial="initial"
         animate="animate"
-        variants={staggeredContainer(0.1, 0.2)}
+        variants={containerVariants}
+        exit="exit"
       >
-        <motion.div variants={fadeIn}>
+        <motion.div variants={pageVariants}>
           <Header onAddClick={handleAddClick} />
         </motion.div>
         

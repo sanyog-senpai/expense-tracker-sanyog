@@ -8,6 +8,7 @@ import TransactionDetail from './pages/TransactionDetail';
 import Index from './pages/Index';
 import CategoryManagement from './pages/CategoryManagement';
 import FinancialDetails from './pages/FinancialDetails';
+import { Toaster } from './components/ui/toaster';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
             <Route path="/financial-details" element={<FinancialDetails />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <Toaster />
         </TransactionProvider>
       </CategoryProvider>
     </Router>
