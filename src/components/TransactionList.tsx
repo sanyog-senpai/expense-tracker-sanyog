@@ -272,7 +272,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center space-x-2">
             <h3 className="text-sm md:text-base font-medium text-white">Transactions</h3>
-            <motion.div
+            
+          </div>
+          
+          <div className="flex items-center space-x-2">
+          <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -286,9 +290,6 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 <span className="text-xs">Categories</span>
               </Button>
             </motion.div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

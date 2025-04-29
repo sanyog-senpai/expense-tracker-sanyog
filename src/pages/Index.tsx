@@ -23,22 +23,22 @@ const ExpenseTrackerApp = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions'>(
     tabParam === 'transactions' ? 'transactions' : 'dashboard'
   );
-  
+
   // Update active tab when URL search param changes
   useEffect(() => {
     setActiveTab(tabParam === 'transactions' ? 'transactions' : 'dashboard');
   }, [tabParam]);
-  
+
   const handleAddClick = () => {
     setEditingTransaction(undefined);
     setIsAddModalOpen(true);
   };
-  
+
   const handleEditTransaction = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setIsAddModalOpen(true);
   };
-  
+
   const handleDeleteTransaction = (id: string) => {
     deleteTransaction(id);
     toast({
@@ -46,7 +46,7 @@ const ExpenseTrackerApp = () => {
       description: "The transaction has been deleted successfully.",
     });
   };
-  
+
   const handleSaveTransaction = (transaction: Omit<Transaction, 'id'>) => {
     if (editingTransaction) {
       updateTransaction({
@@ -76,7 +76,7 @@ const ExpenseTrackerApp = () => {
       navigate('/?tab=transactions');
     }
   };
-  
+
   return (
     <Layout onAddClick={handleAddClick}>
       <motion.div
@@ -88,10 +88,10 @@ const ExpenseTrackerApp = () => {
         <motion.div variants={pageVariants}>
           <Header onAddClick={handleAddClick} />
         </motion.div>
-        
+
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' ? (
-            <motion.div 
+            <motion.div
               key="dashboard"
               variants={pageVariants}
               initial="initial"
@@ -101,23 +101,23 @@ const ExpenseTrackerApp = () => {
             >
               <Dashboard transactions={state.transactions} />
               <div className="my-6">
-                <motion.h2 
-                  className="text-xl font-semibold mb-4"
+                <motion.h2
+                  className="text-xl font-semibold mt-8"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
                 >
                   Recent Transactions
                 </motion.h2>
-                <TransactionList 
-                  transactions={state.transactions.slice(0, 5)} 
+                <TransactionList
+                  transactions={state.transactions.slice(0, 5)}
                   onEditTransaction={handleEditTransaction}
                   onDeleteTransaction={handleDeleteTransaction}
                 />
               </div>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               key="transactions"
               variants={pageVariants}
               initial="initial"
@@ -125,8 +125,8 @@ const ExpenseTrackerApp = () => {
               exit="exit"
               className="mt-4"
             >
-              <TransactionList 
-                transactions={state.transactions} 
+              <TransactionList
+                transactions={state.transactions}
                 onEditTransaction={handleEditTransaction}
                 onDeleteTransaction={handleDeleteTransaction}
               />
@@ -134,8 +134,8 @@ const ExpenseTrackerApp = () => {
           )}
         </AnimatePresence>
       </motion.div>
-      
-      <AddTransaction 
+
+      <AddTransaction
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleSaveTransaction}
