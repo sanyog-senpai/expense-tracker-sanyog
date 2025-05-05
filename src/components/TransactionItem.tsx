@@ -76,12 +76,12 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
               <div className="flex-grow min-w-0">
                 <div className="flex items-center">
                   <h3 className="text-white font-medium text-base truncate mr-2">{transaction.description}</h3>
-                  {transaction.isSavings && (
+                  {/* {transaction.isSavings && (
                     <div className="bg-blue-500/20 rounded-full px-1 py-0.5 flex items-center">
                       <Wallet className="h-2 w-2 text-blue-400 mr-0.5" />
                       <span className="text-3xs text-blue-400">Savings</span>
                     </div>
-                  )}
+                  )} */}
                 </div>
                 <div className="flex items-center mt-1 space-x-2">
                   <p className="text-white/50 text-2xs">{formatTime(transaction.date)}</p>

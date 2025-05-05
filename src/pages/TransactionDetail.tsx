@@ -17,25 +17,25 @@ const TransactionDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
+
   const transaction = useMemo(() => {
     return state.transactions.find(t => t.id === id);
   }, [id, state.transactions]);
-  
+
   // Calculate the balances before and after this transaction
   const balanceDetails = useMemo(() => {
     if (!transaction) return { beforeBalance: 0, afterBalance: 0 };
-    
+
     // Sort transactions by date (newest first to get chronological order)
     const sortedTransactions = [...state.transactions].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    
+
     // Find the index of the current transaction
     const transactionIndex = sortedTransactions.findIndex(t => t.id === id);
-    
+
     if (transactionIndex === -1) return { beforeBalance: 0, afterBalance: 0 };
-    
+
     // Calculate balance before this transaction (all transactions before this one)
     let beforeBalance = 0;
     for (let i = 0; i < transactionIndex; i++) {
@@ -46,7 +46,7 @@ const TransactionDetail = () => {
         beforeBalance -= t.amount; // Expense or savings reduces balance
       }
     }
-    
+
     // Calculate balance after this transaction (including this one)
     let afterBalance = beforeBalance;
     const t = transaction;
@@ -55,10 +55,10 @@ const TransactionDetail = () => {
     } else {
       afterBalance -= t.amount; // Expense or savings reduces balance
     }
-    
+
     return { beforeBalance, afterBalance };
   }, [transaction, state.transactions, id]);
-  
+
   const handleDelete = () => {
     if (id) {
       deleteTransaction(id);
@@ -69,7 +69,7 @@ const TransactionDetail = () => {
       navigate('/');
     }
   };
-  
+
   const handleEdit = (updatedTransaction: Omit<Transaction, 'id'>) => {
     if (id && transaction) {
       updateTransaction({
@@ -83,7 +83,7 @@ const TransactionDetail = () => {
       setIsEditModalOpen(false);
     }
   };
-  
+
   if (state.loading) {
     return (
       <div className="min-h-screen bg-purple-dark p-4 md:p-6 flex items-center justify-center">
@@ -91,20 +91,20 @@ const TransactionDetail = () => {
       </div>
     );
   }
-  
+
   if (!transaction) {
     return (
       <div className="min-h-screen bg-purple-dark p-4 md:p-6">
         <div className="max-w-lg mx-auto">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="bg-white/5 border-white/10 text-white hover:bg-white/10 mb-6"
             onClick={() => navigate('/')}
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
             Back to Transactions
           </Button>
-          
+
           <Card className="border-white/10 bg-white/5 overflow-hidden shadow-xl">
             <CardContent className="p-6 md:p-8 flex flex-col items-center text-center">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
@@ -112,7 +112,7 @@ const TransactionDetail = () => {
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Transaction Not Found</h2>
               <p className="text-white/70 mb-6">This transaction may have been deleted or doesn't exist.</p>
-              <Button 
+              <Button
                 onClick={() => navigate('/')}
                 className="bg-neon-purple hover:bg-neon-purple/90"
               >
@@ -124,30 +124,40 @@ const TransactionDetail = () => {
       </div>
     );
   }
-  
+
   const getBgColor = () => {
     if (transaction.isSavings) return 'bg-gradient-to-br from-blue-500/20 to-blue-600/10 border-blue-400/30';
     if (transaction.isExpense) return 'bg-gradient-to-br from-red-500/20 to-red-600/10 border-red-400/30';
     return 'bg-gradient-to-br from-green-500/20 to-green-600/10 border-green-400/30';
   };
-  
+
   const getTextColor = () => {
     if (transaction.isSavings) return 'text-blue-400';
     if (transaction.isExpense) return 'text-red-400';
     return 'text-green-400';
   };
-  
+
   const getTypeText = () => {
     if (transaction.isSavings) return 'Savings';
     if (transaction.isExpense) return 'Expense';
     return 'Income';
   };
-  
+
+  // const getBalanceChangeIcon = () => {
+  //   if (transaction.isSavings || transaction.isExpense) return <ArrowDown className="h-4 w-4 text-red-400" />;
+  //   return <ArrowUp className="h-4 w-4 text-green-400" />;
+  // };
+
   const getBalanceChangeIcon = () => {
-    if (transaction.isSavings || transaction.isExpense) return <ArrowDown className="h-4 w-4 text-red-400" />;
+    if (transaction.isSavings) {
+      return <ArrowDown className="h-4 w-4 text-blue-400" />;
+    }
+    if (transaction.isSavings || transaction.isExpense) {
+      return <ArrowDown className="h-4 w-4 text-red-400" />;
+    }
     return <ArrowUp className="h-4 w-4 text-green-400" />;
   };
-  
+
   return (
     <div className="min-h-screen bg-purple-dark p-4 md:p-6">
       <div className="max-w-lg mx-auto">
@@ -156,8 +166,8 @@ const TransactionDetail = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="bg-white/5 border-white/10 text-white hover:bg-white/10 mb-6"
             onClick={() => navigate('/')}
           >
@@ -165,7 +175,7 @@ const TransactionDetail = () => {
             Back to Transactions
           </Button>
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -177,7 +187,7 @@ const TransactionDetail = () => {
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2 mb-1">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-white/10`}>
-                      {React.createElement(getCategoryIcon(transaction.category), { 
+                      {React.createElement(getCategoryIcon(transaction.category), {
                         size: 18,
                         className: getCategoryColor(transaction.category)
                       })}
@@ -202,7 +212,7 @@ const TransactionDetail = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex space-x-2">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
@@ -214,7 +224,7 @@ const TransactionDetail = () => {
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
                   </motion.div>
-                  
+
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -237,7 +247,7 @@ const TransactionDetail = () => {
                           <AlertDialogCancel className="bg-transparent text-white/70 border-white/10 hover:bg-white/5 hover:text-white">
                             Cancel
                           </AlertDialogCancel>
-                          <AlertDialogAction 
+                          <AlertDialogAction
                             onClick={handleDelete}
                             className="bg-red-500 hover:bg-red-600 text-white"
                           >
@@ -249,14 +259,20 @@ const TransactionDetail = () => {
                   </motion.div>
                 </div>
               </div>
-              
+
               <div className="flex flex-col items-center md:flex-row md:justify-between bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10 mt-5">
                 <div className="mb-3 md:mb-0">
                   <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 mb-2">
-                    {transaction.isExpense ? 
-                      <ArrowDown className="h-3.5 w-3.5 text-red-400 mr-1.5" /> : 
-                      <ArrowUp className="h-3.5 w-3.5 text-green-400 mr-1.5" />
+                    {
+                      transaction.isSavings ? (
+                        <ArrowDown className="h-3.5 w-3.5 text-blue-400 mr-1.5" />
+                      ) : transaction.isExpense ? (
+                        <ArrowDown className="h-3.5 w-3.5 text-red-400 mr-1.5" />
+                      ) : (
+                        <ArrowUp className="h-3.5 w-3.5 text-green-400 mr-1.5" />
+                      )
                     }
+
                     <span className={`text-xs font-medium ${getTextColor()}`}>
                       {getTypeText()}
                     </span>
@@ -265,7 +281,7 @@ const TransactionDetail = () => {
                     {formatCurrency(transaction.amount)}
                   </p>
                 </div>
-                
+
                 {transaction.isSavings && transaction.savingsPurpose && (
                   <div className="bg-blue-500/20 px-3 py-2 rounded-md border border-blue-400/30">
                     <p className="text-white/60 text-2xs mb-0.5">Savings Purpose</p>
@@ -273,19 +289,19 @@ const TransactionDetail = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Balance Before & After Section */}
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
                   <p className="text-white/50 text-2xs mb-1">Balance Before</p>
                   <p className="text-white/90 text-sm font-semibold">{formatCurrency(balanceDetails.beforeBalance)}</p>
                 </div>
-                
+
                 <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
                   <p className="text-white/50 text-2xs mb-1">Balance After</p>
-                  <div className="flex items-center">
+                  <div className="flex items-center flex-wrap gap-2 sm:gap-0">
                     <p className="text-white/90 text-sm font-semibold">{formatCurrency(balanceDetails.afterBalance)}</p>
-                    <div className="flex items-center ml-2 text-2xs px-1.5 py-0.5 bg-white/5 rounded-full">
+                    <div className=" flex items-center ml-0 sm:ml-2 text-2xs px-1.5 py-0.5 bg-white/5 rounded-full">
                       {getBalanceChangeIcon()}
                       <span className={`ml-0.5 ${getTextColor()}`}>
                         {formatCurrency(Math.abs(balanceDetails.afterBalance - balanceDetails.beforeBalance))}
@@ -295,7 +311,7 @@ const TransactionDetail = () => {
                 </div>
               </div>
             </div>
-            
+
             {transaction.remarks && (
               <CardContent className="p-6">
                 <h3 className="text-sm font-medium text-white/80 mb-2">Notes</h3>
@@ -307,7 +323,7 @@ const TransactionDetail = () => {
           </Card>
         </motion.div>
       </div>
-      
+
       <AddTransaction
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

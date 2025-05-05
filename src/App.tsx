@@ -9,6 +9,9 @@ import Index from './pages/Index';
 import CategoryManagement from './pages/CategoryManagement';
 import FinancialDetails from './pages/FinancialDetails';
 import { Toaster } from './components/ui/toaster';
+import { LogIn } from 'lucide-react';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 const App = () => {
   return (
@@ -20,6 +23,8 @@ const App = () => {
             <Route path="/transaction/:id" element={<TransactionDetail />} />
             <Route path="/categories" element={<CategoryManagement />} />
             <Route path="/financial-details" element={<FinancialDetails />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
