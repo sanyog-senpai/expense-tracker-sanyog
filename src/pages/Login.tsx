@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Mail, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [email, setEmail] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -20,7 +24,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
@@ -28,10 +32,29 @@ const Login = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    console.log('Logging in with:', { email, password });
+    try {
+      await login(email, password);
+      navigate("/")
+    } catch (error) {
+      console.error('Login failed:', error);
+      console.log('Error caught in Login.tsx:', error);
+      console.log('Error code:', error.code);//log the full error object to console
+        setShake(true);
+          setTimeout(() => setShake(false), 500);
+        if (error.code === 'auth/invalid-credential') {
+          setErrorMessage('Invalid email or password.');
+        } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            setErrorMessage('Invalid email or password.');
+          } else {
+        setErrorMessage('Login failed. Please try again.');
+      }
+      console.log('Error message state:', errorMessage);
+    } finally {
+        
+       
+         
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,8 +69,7 @@ const Login = () => {
           animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
           transition={{ duration: 0.5 }}
         >
-          <Card className="bg-gray-800/80 border border-white/10 backdrop-blur-sm shadow-2xl overflow-hidden">
-            {/* Animated header */}
+          <Card className="bg-gray-800/80 mt-4 border border-white/10 backdrop-blur-sm shadow-2xl overflow-hidden">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -55,21 +77,26 @@ const Login = () => {
             >
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-2xl font-bold text-white">
-                  Welcome Back
+                  Sign In
                 </CardTitle>
-                <motion.p 
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.7 }}
                   transition={{ delay: 0.3 }}
                   className="text-sm text-white/70 mt-1"
                 >
-                  Sign in to continue to Expense Tracker
+                  Welcome back! Please login to your account
                 </motion.p>
               </CardHeader>
             </motion.div>
 
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-5">
+                {errorMessage && (
+                    <motion.p className="text-sm pb-4 font-medium text-red-500 text-center">
+                        {errorMessage}
+                    </motion.p>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email Field */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -83,8 +110,9 @@ const Login = () => {
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
                     <Input
                       id="email"
+                      name="email"
                       type="email"
-                      placeholder="Enter Email or Username"
+                      placeholder="Enter Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 bg-gray-700/50 border-white/10 text-white focus:border-purple-400/50 focus:ring-1 focus:ring-purple-400/30 h-11"
@@ -97,24 +125,16 @@ const Login = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="pt-1"
+                  transition={{ delay: 0.25 }}
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <Label htmlFor="password" className="text-white/80">
-                      Password
-                    </Label>
-                    <Link 
-                      to="/forgot-password" 
-                      className="text-xs text-purple-400 hover:text-purple-300 hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
+                  <Label htmlFor="password" className="text-white/80 block mb-2">
+                    Password
+                  </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
                     <Input
                       id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter Password"
                       value={password}
@@ -146,8 +166,8 @@ const Login = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="pt-2"
+                  transition={{ delay: 0.3 }}
+                  className="pt-1"
                 >
                   <Button
                     type="submit"
@@ -183,30 +203,30 @@ const Login = () => {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.4 }}
                   className="text-center text-sm text-white/70 pt-3"
                 >
                   Don't have an account?{' '}
-                  <Link 
-                    to="/register" 
+                  <Link
+                    to="/register"
                     className="font-medium text-purple-400 hover:text-purple-300 hover:underline"
                   >
-                    Create account
+                    Sign up
                   </Link>
                 </motion.div>
               </form>
             </CardContent>
 
-          </Card>
             {/* Footer */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="px-6 pb-4 mt-6 text-center text-xs text-white/50"
-            >
-              Expense Tracker © {new Date().getFullYear()}
-            </motion.div>
+          </Card>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="px-6 pb-4 mt-6 text-center text-xs text-white/50"
+          >
+            Expense Tracker © {new Date().getFullYear()}
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>

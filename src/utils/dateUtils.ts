@@ -7,8 +7,13 @@ import {
 
 // Function to format the date
 export const formatDate = (dateStr: string): string => {
+  // Add this validation check:
+  if (!dateStr || typeof dateStr !== 'string' || new Date(dateStr).toString() === 'Invalid Date') {
+    return 'N/A'; // Return 'N/A' for invalid or empty date strings
+  }
+
   const date = new Date(dateStr);
-  
+
   if (isToday(date)) {
     return 'Today';
   } else if (isYesterday(date)) {
@@ -20,6 +25,11 @@ export const formatDate = (dateStr: string): string => {
 
 // Function to format the time
 export const formatTime = (dateStr: string): string => {
+  // Add this validation check:
+  if (!dateStr || typeof dateStr !== 'string' || new Date(dateStr).toString() === 'Invalid Date') {
+    return 'N/A'; // Return 'N/A' for invalid or empty date strings
+  }
+
   const date = new Date(dateStr);
   return format(date, 'h:mm a');
 };
@@ -94,7 +104,9 @@ export const getCategoryColor = (category: string) => {
 
 export const groupTransactionsByDate = (transactions: any[]) => {
   return transactions.reduce((groups: any, transaction: any) => {
+    // This line will now call the corrected formatDate
     const date = formatDate(transaction.date);
+    // ... rest of groupTransactionsByDate
     if (!groups[date]) {
       groups[date] = [];
     }

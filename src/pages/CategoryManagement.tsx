@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useCategories, CATEGORY_COLORS, CATEGORY_ICONS } from '@/context/CategoryContext';
+import { useCategories, CATEGORY_COLORS, CATEGORY_ICONS, CategoryConfig } from '@/context/CategoryContext'; // Import CategoryConfig
 import { getCategoryIcon } from '@/utils/dateUtils';
 import { motion } from 'framer-motion';
 import { fadeIn, slideUp } from '@/lib/animations';
@@ -21,16 +20,42 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuth } from '@/context/AuthContext';
+
+
+// Define the type for category objects including the id
+interface Category extends CategoryConfig {
+  id: string;
+  // isDefault is already in CategoryConfig
+}
 
 const CategoryManagement = () => {
-  const { categories, addCategory, removeCategory, isDefaultCategory, categoryConfigs } = useCategories();
+  // Update the type for categories state
+  const { categories, loading, removeCategory, addCategory } = useCategories();
+  const { currentUser } = useAuth(); // Get currentUser from AuthContext
+
   const [newCategory, setNewCategory] = useState('');
   const [selectedColor, setSelectedColor] = useState('purple');
   const [selectedIcon, setSelectedIcon] = useState('other');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState('');
+  // categoryToDelete should store the category ID
+  const [categoryToDeleteId, setCategoryToDeleteId] = useState<string | null>(null);
+  // State to store the category object to display in the dialog
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
-  const handleAddCategory = () => {
+
+  // Find the category object based on categoryToDeleteId
+  useEffect(() => {
+    if (categoryToDeleteId) {
+      const foundCategory = categories.find(cat => cat.id === categoryToDeleteId);
+      setCategoryToDelete(foundCategory || null);
+    } else {
+      setCategoryToDelete(null);
+    }
+  }, [categoryToDeleteId, categories]);
+
+
+  const handleAddCategory = async () => { // Made async to await addCategory
     if (!newCategory.trim()) {
       toast({
         title: "Error",
@@ -39,47 +64,79 @@ const CategoryManagement = () => {
       });
       return;
     }
-    
-    if (categories.includes(newCategory.toLowerCase().trim())) {
-      toast({
-        title: "Error",
-        description: "This category already exists",
-        variant: "destructive",
-      });
-      return;
+
+    // Check if category already exists locally (basic check before async operation)
+    // The duplicate check in CategoryContext is more comprehensive
+    // but a local check can provide faster feedback
+    if (categories.some(cat => cat.name.toLowerCase() === newCategory.toLowerCase().trim())) {
+         toast({
+           title: "Error",
+           description: "This category already exists",
+           variant: "destructive",
+         });
+         return;
+       }
+
+    try {
+        await addCategory(newCategory.trim(), selectedColor, selectedIcon); // addCategory now writes to Firestore and is async
+
+        // Optional: Show success toast here if addCategory doesn't handle it
+        // toast({
+        //   title: "Success",
+        //   description: `${newCategory.trim()} category added`,
+        // });
+
+       setNewCategory('');
+    } catch (error: any) { // Catch potential errors from addCategory
+        toast({
+            title: "Error adding category",
+            description: error.message || "An unexpected error occurred",
+            variant: "destructive",
+        });
     }
-    
-    addCategory(newCategory.trim(), selectedColor, selectedIcon);
-    setNewCategory('');
-    
-    toast({
-      title: "Category added",
-      description: `${newCategory} has been added successfully`,
-    });
   };
-  
-  const handleDeleteConfirm = () => {
-    if (categoryToDelete) {
-      removeCategory(categoryToDelete);
+
+  const handleDeleteConfirm = async () => {
+    if (categoryToDeleteId) {
+      try {
+        const success = await removeCategory(categoryToDeleteId); // removeCategory now returns boolean
+
+        if (success) {
+            toast({
+              title: "Category hidden", // Changed toast message for soft delete
+              description: `${categoryToDelete?.name || 'Category'} has been deleted successfully`,
+            });
+        } else {
+             // removeCategory already shows a toast for failure (e.g., linked transactions)
+             // so we don't need another toast here unless you want a generic error
+             console.log("Category not hidden, likely due to linked transactions or other error");
+        }
+
+      } catch (error) {
+        // This catch might be redundant if removeCategory handles all errors internally
+        console.error("Error during category removal confirmation:", error);
+        toast({
+            title: "Error",
+            description: `An unexpected error occurred while trying to hide "${categoryToDelete?.name || 'Category'}".`,
+            variant: "destructive",
+          });
+      }
+
       setIsDeleteDialogOpen(false);
-      setCategoryToDelete('');
-      
-      toast({
-        title: "Category deleted",
-        description: `${categoryToDelete} has been deleted successfully`,
-      });
+      setCategoryToDeleteId(null);
+      setCategoryToDelete(null); // Clear categoryToDelete state as well
     }
   };
-  
-  const openDeleteDialog = (category: string) => {
-    setCategoryToDelete(category);
+
+  // Open delete dialog, storing the category ID
+  const openDeleteDialog = (categoryId: string) => {
+    setCategoryToDeleteId(categoryId);
     setIsDeleteDialogOpen(true);
   };
-  
+
   // Helper function to get the background color class for the category
-  const getCategoryColorClass = (category: string) => {
-    const config = categoryConfigs[category] || { color: 'purple' };
-    switch (config.color) {
+  const getCategoryColorClass = (color: string) => {
+    switch (color) {
       case 'red': return 'bg-red-500/20 text-red-400';
       case 'green': return 'bg-green-500/20 text-green-400';
       case 'blue': return 'bg-blue-500/20 text-blue-400';
@@ -91,7 +148,7 @@ const CategoryManagement = () => {
       default: return 'bg-neon-purple/20 text-neon-purple';
     }
   };
-  
+
   // Generate a preview of the selected color and icon
   const getColorPreview = (color: string) => {
     switch (color) {
@@ -106,16 +163,16 @@ const CategoryManagement = () => {
       default: return 'bg-neon-purple';
     }
   };
-  
+
   // Helper function to render the icon component
   const renderCategoryIcon = (iconName: string) => {
     const IconComponent = getCategoryIcon(iconName);
     return <IconComponent className="h-4 w-4" />;
   };
-  
+
   return (
     <Layout>
-      <motion.div 
+      <motion.div
         initial="initial"
         animate="animate"
         variants={fadeIn}
@@ -129,7 +186,7 @@ const CategoryManagement = () => {
           </Link>
           <h1 className="text-2xl font-bold text-white">Manage Categories</h1>
         </div>
-        
+
         <motion.div
           variants={slideUp}
           className="mb-8"
@@ -137,7 +194,7 @@ const CategoryManagement = () => {
           <Card className="bg-white/5 border-white/10">
             <CardContent className="p-4 md:p-6">
               <h2 className="text-lg font-semibold text-white mb-4">Add New Category</h2>
-              
+
               <div className="grid gap-4">
                 <div>
                   <Label htmlFor="category" className="text-white/70 mb-1.5 block text-xs">Category Name</Label>
@@ -149,7 +206,7 @@ const CategoryManagement = () => {
                     className="bg-white/5 border-white/10 text-white focus:border-neon-purple/50"
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="color" className="text-white/70 mb-1.5 block text-xs">Category Color</Label>
@@ -175,7 +232,7 @@ const CategoryManagement = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="icon" className="text-white/70 mb-1.5 block text-xs">Category Icon</Label>
                     <Select
@@ -203,17 +260,17 @@ const CategoryManagement = () => {
                     </Select>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex items-center space-x-3 mt-2 mb-4">
                     <div className="text-sm text-white/70">Preview:</div>
-                    <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full ${getCategoryColorClass(newCategory || selectedColor)}`}>
+                    <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full ${getCategoryColorClass(selectedColor)}`}> {/* Use selectedColor for preview */}
                       {renderCategoryIcon(selectedIcon)}
                       <span>{newCategory || 'Category Name'}</span>
                     </div>
                   </div>
                 </div>
-                
+
                 <Button
                   onClick={handleAddCategory}
                   className="bg-neon-purple hover:bg-neon-purple/90 text-white"
@@ -225,60 +282,63 @@ const CategoryManagement = () => {
             </CardContent>
           </Card>
         </motion.div>
-        
+
         <motion.div variants={slideUp} className="space-y-4">
           <h2 className="text-lg font-semibold text-white">Your Categories</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Removed the incorrect filter here */}
             {categories.map((category) => {
-              const isDefault = isDefaultCategory(category);
-              const config = categoryConfigs[category] || { color: 'purple', icon: 'other' };
-              
-              return (
-                <motion.div 
-                  key={category}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Card className={`bg-white/5 hover:bg-white/10 border-white/10 transition-all border-l-4 ${getCategoryColorClass(category).includes('bg-') ? getCategoryColorClass(category).replace('text-', 'border-l-').replace('/20', '') : 'border-l-neon-purple'}`}>
-                    <CardContent className="p-3 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${getCategoryColorClass(category)}`}>
-                          {renderCategoryIcon(config.icon || category)}
+                const isDefault = category.isDefault || false;
+                const { id, name, color, icon } = category;
+
+                return (
+                  <motion.div
+                    key={id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Card className={`bg-white/5 hover:bg-white/10 border-white/10 transition-all border-l-4 ${getCategoryColorClass(color).includes('bg-') ? getCategoryColorClass(color).replace('text-', 'border-l-').replace('/20', '') : 'border-l-neon-purple'}`}>
+                      <CardContent className="p-3 flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${getCategoryColorClass(color)}`}>
+                            {renderCategoryIcon(icon)}
+                          </div>
+                          <div>
+                            <p className="text-white font-medium capitalize">{name}</p>
+                            {isDefault && (
+                              <p className="text-2xs text-white/50">Default category</p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-white font-medium capitalize">{category}</p>
-                          {isDefault && (
-                            <p className="text-2xs text-white/50">Default category</p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {!isDefault && (
-                        <Button
+
+                        {/* The delete button is now visible for all categories that are not truly non-deletable system categories */}
+                        {/* If you have categories that should NEVER be deletable/hideable, you'll need a different property than isDefault */}
+                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => openDeleteDialog(category)}
+                          onClick={() => openDeleteDialog(id)}
                           className="text-white/40 hover:text-red-400 hover:bg-red-500/10"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
           </div>
         </motion.div>
+
       </motion.div>
-      
+
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="bg-purple-dark border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Confirm Deletion</DialogTitle>
+            <DialogTitle className="text-white">Confirm Delete</DialogTitle> {/* Changed title */}
             <DialogDescription className="text-white/70">
-              Are you sure you want to delete the "{categoryToDelete}" category? This action cannot be undone.
+              Are you sure you want to delete the "{categoryToDelete?.name || 'Category'}" category? {/* Changed description */}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -293,7 +353,7 @@ const CategoryManagement = () => {
               onClick={handleDeleteConfirm}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              Delete
+              Delete Category {/* Changed button text */}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import { Lock, Mail, Eye, EyeOff, User, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { auth, db } from '../firebase';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
-    username: '',
+    username: '', // Firebase Auth does not directly support username, but you can store it separately
     email: '',
     password: '',
     confirmPassword: ''
   });
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -29,17 +36,22 @@ const Register = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setErrorMessage('');
+    setShake(false);
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
       setShake(true);
+      setErrorMessage("Please fill in all fields.");
+
       setTimeout(() => setShake(false), 500);
       return;
     }
@@ -47,14 +59,50 @@ const Register = () => {
     if (formData.password !== formData.confirmPassword) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
+      setErrorMessage("Passwords do not match.");
+
       return;
     }
 
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    console.log('Registering with:', formData);
+    try {
+      const userCredential = await register(formData.email, formData.password);
+      const user = userCredential.user; // Get the user object
+
+      // Save user data to Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        username: formData.username,
+        email: user.email,
+        createdAt: new Date(),
+      });
+      setIsLoading(false);
+      setSuccessMessage('Registration successful! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
+      // You might want to save the username to Firestore here after successful registration
+    } catch (error: any) {
+      console.error('Register failed:', error);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      setErrorMessage(error.message || 'Registration failed. Please try again.');
+
+      if (error.code === 'auth/email-already-in-use') {
+        setErrorMessage('This email address is already in use.');
+      } else if (error.code === 'auth/weak-password') {
+        setErrorMessage('The password is too weak. Please choose a stronger password.');
+      } else {
+        setErrorMessage('Registration failed. Please try again.');
+      }
+
+      console.error('Registration failed:', error); // Log the full error object
+
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -80,7 +128,7 @@ const Register = () => {
                 <CardTitle className="text-2xl font-bold text-white">
                   Create Account
                 </CardTitle>
-                <motion.p 
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.7 }}
                   transition={{ delay: 0.3 }}
@@ -92,8 +140,17 @@ const Register = () => {
             </motion.div>
 
             <CardContent>
+              {errorMessage && (
+                <p className="text-red-500 text-center text-sm mb-4">{errorMessage}</p>
+              )}
+              {successMessage && (
+                <p className="text-green-500 text-center text-sm mb-4">
+                  {successMessage}
+                </p>
+              )}
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Username Field */}
+                {/* Username Field - Note: Firebase Auth doesn't directly support username */}
+                {/* You would typically store this in a database like Firestore */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -270,26 +327,28 @@ const Register = () => {
                   className="text-center text-sm text-white/70 pt-3"
                 >
                   Already have an account?{' '}
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="font-medium text-purple-400 hover:text-purple-300 hover:underline"
                   >
                     Sign in
                   </Link>
                 </motion.div>
               </form>
+
+
             </CardContent>
 
             {/* Footer */}
           </Card>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="px-6 pb-4 mt-6 text-center text-xs text-white/50"
-            >
-              Expense Tracker © {new Date().getFullYear()}
-            </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="px-6 pb-4 mt-6 text-center text-xs text-white/50"
+          >
+            Expense Tracker © {new Date().getFullYear()}
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>

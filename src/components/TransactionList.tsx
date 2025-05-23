@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Transaction } from '@/context/TransactionContext';
+import { useTransactions, Transaction } from '@/context/TransactionContext'; // Corrected hook name
+
 import TransactionItem from './TransactionItem';
 import { groupTransactionsByDate, formatCurrency } from '@/utils/dateUtils';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerChildren, slideUp } from '@/lib/animations';
 import { exportTransactionsToExcel } from '@/utils/exportUtils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -324,7 +326,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                       </Button>
                     </motion.div>
                     <p className="text-2xs text-white/40 mt-1">
-                      {filteredTransactions.length} transaction(s) will be exported
+                      {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
                     </p>
                   </div>
                 </PopoverContent>
@@ -574,58 +576,64 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     variants={slideUp}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <TransactionItem
-                      transaction={transaction}
-                      onEditClick={onEditTransaction}
-                      onDeleteClick={(id) => {
-                        // Instead of directly deleting, we'll show a confirmation dialog
-                        // The actual deletion happens in the alert dialog action
-                      }}
-                      actionContent={
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-white/50 hover:text-red-400 hover:bg-red-500/10"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="h-4 w-4"
+                    {/* TransactionItem should handle its own navigation if it contains a Link */}
+                      <TransactionItem
+                        transaction={transaction}
+                        onEditClick={onEditTransaction}
+                        onDeleteClick={(id) => {
+                          // Instead of directly deleting, we'll show a confirmation dialog
+                          // The actual deletion happens in the alert dialog action
+                        }}
+                        actionContent={
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-white/50 hover:text-red-400 hover:bg-red-500/10"
+                                // Prevent click on button from triggering Link (if TransactionItem uses Link internally)
+                                onClick={(e) => e.stopPropagation()}
                               >
-                                <path d="M3 6h18" />
-                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                              </svg>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="bg-purple-dark border-white/10">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-white">Confirm Deletion</AlertDialogTitle>
-                              <AlertDialogDescription className="text-white/70">
-                                Are you sure you want to delete this transaction?<br />
-                                <span className="font-semibold text-white/90">{transaction.description}</span> - {formatCurrency(transaction.amount)}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="bg-transparent text-white/70 border-white/10 hover:bg-white/5 hover:text-white">Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-red-500 hover:bg-red-600 text-white"
-                                onClick={() => handleDeleteWithConfirmation(transaction.id)}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      }
-                    />
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="h-4 w-4"
+                                >
+                                  <path d="M3 6h18" />
+                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                </svg>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-purple-dark border-white/10">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">Confirm Deletion</AlertDialogTitle>
+                                <AlertDialogDescription className="text-white/70">
+                                  Are you sure you want to delete this transaction?<br />
+                                  <span className="font-semibold text-white/90">{transaction.description}</span> - {formatCurrency(transaction.amount)}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-transparent text-white/70 border-white/10 hover:bg-white/5 hover:text-white">Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-500 hover:bg-red-600 text-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent Link from triggering
+                                    handleDeleteWithConfirmation(transaction.id);
+                                  }}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        }
+                      />
                   </motion.div>
                 ))}
               </motion.div>

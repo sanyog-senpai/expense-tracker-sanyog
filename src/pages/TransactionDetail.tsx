@@ -11,28 +11,32 @@ import AddTransaction from '@/components/AddTransaction';
 import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 
-const TransactionDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { state, updateTransaction, deleteTransaction } = useTransactions();
-  const navigate = useNavigate();
+const TransactionDetail: React.FC = () => {
   const { toast } = useToast();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const { transactionId } = useParams<{ transactionId: string }>();
+  const { state, deleteTransaction, updateTransaction } = useTransactions();
+  const navigate = useNavigate();
+
+  // Find the transaction using useMemo
   const transaction = useMemo(() => {
-    return state.transactions.find(t => t.id === id);
-  }, [id, state.transactions]);
+    if (!state.transactions) return undefined;
+    return state.transactions.find(t => t.id === transactionId);
+  }, [transactionId, state.transactions]);
 
   // Calculate the balances before and after this transaction
+  // Calculate the balances before and after this transaction
   const balanceDetails = useMemo(() => {
-    if (!transaction) return { beforeBalance: 0, afterBalance: 0 };
+    if (!transaction || !state.transactions) return { beforeBalance: 0, afterBalance: 0 };
 
-    // Sort transactions by date (newest first to get chronological order)
+    // Sort transactions by date (oldest first to get chronological order)
     const sortedTransactions = [...state.transactions].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     // Find the index of the current transaction
-    const transactionIndex = sortedTransactions.findIndex(t => t.id === id);
+    const transactionIndex = sortedTransactions.findIndex(t => t.id === transactionId);
 
     if (transactionIndex === -1) return { beforeBalance: 0, afterBalance: 0 };
 
@@ -49,19 +53,18 @@ const TransactionDetail = () => {
 
     // Calculate balance after this transaction (including this one)
     let afterBalance = beforeBalance;
-    const t = transaction;
-    if (!t.isExpense) {
-      afterBalance += t.amount; // Income adds to balance
+    if (!transaction.isExpense) {
+      afterBalance += transaction.amount; // Income adds to balance
     } else {
-      afterBalance -= t.amount; // Expense or savings reduces balance
+      afterBalance -= transaction.amount; // Expense or savings reduces balance
     }
 
     return { beforeBalance, afterBalance };
-  }, [transaction, state.transactions, id]);
+  }, [transaction, state.transactions, transactionId]);
 
   const handleDelete = () => {
-    if (id) {
-      deleteTransaction(id);
+    if (transactionId) {
+      deleteTransaction(transactionId);
       toast({
         title: 'Transaction deleted',
         description: 'The transaction has been successfully deleted.'
@@ -71,10 +74,10 @@ const TransactionDetail = () => {
   };
 
   const handleEdit = (updatedTransaction: Omit<Transaction, 'id'>) => {
-    if (id && transaction) {
+    if (transactionId && transaction) {
       updateTransaction({
         ...updatedTransaction,
-        id
+        id: transactionId
       });
       toast({
         title: 'Transaction updated',
@@ -143,16 +146,11 @@ const TransactionDetail = () => {
     return 'Income';
   };
 
-  // const getBalanceChangeIcon = () => {
-  //   if (transaction.isSavings || transaction.isExpense) return <ArrowDown className="h-4 w-4 text-red-400" />;
-  //   return <ArrowUp className="h-4 w-4 text-green-400" />;
-  // };
-
   const getBalanceChangeIcon = () => {
     if (transaction.isSavings) {
       return <ArrowDown className="h-4 w-4 text-blue-400" />;
     }
-    if (transaction.isSavings || transaction.isExpense) {
+    if (transaction.isExpense) {
       return <ArrowDown className="h-4 w-4 text-red-400" />;
     }
     return <ArrowUp className="h-4 w-4 text-green-400" />;
@@ -263,17 +261,8 @@ const TransactionDetail = () => {
               <div className="flex flex-col items-center md:flex-row md:justify-between bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10 mt-5">
                 <div className="mb-3 md:mb-0">
                   <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 mb-2">
-                    {
-                      transaction.isSavings ? (
-                        <ArrowDown className="h-3.5 w-3.5 text-blue-400 mr-1.5" />
-                      ) : transaction.isExpense ? (
-                        <ArrowDown className="h-3.5 w-3.5 text-red-400 mr-1.5" />
-                      ) : (
-                        <ArrowUp className="h-3.5 w-3.5 text-green-400 mr-1.5" />
-                      )
-                    }
-
-                    <span className={`text-xs font-medium ${getTextColor()}`}>
+                    {getBalanceChangeIcon()}
+                    <span className={`text-xs font-medium ${getTextColor()} ml-1.5`}>
                       {getTypeText()}
                     </span>
                   </div>

@@ -1,24 +1,29 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Coffee, ShoppingBag, GraduationCap, Car, Utensils, Palmtree, Home, Heart, PiggyBank, Grid } from 'lucide-react';
+import { doc, updateDoc, arrayUnion, collection, query, where, onSnapshot, addDoc, getDocs } from "firebase/firestore";
+import { db } from '@/firebase';
+import { useAuth } from './AuthContext'; // Assuming you have an AuthContext
 
-// Default categories that can't be deleted
+// Default categories that can\'t be deleted
 const DEFAULT_CATEGORIES = [
-  'food', 
-  'transportation', 
-  'entertainment', 
-  'shopping', 
-  'utilities', 
-  'health', 
-  'education', 
-  'travel', 
-  'savings', 
+  'food',
+  'transportation',
+  'entertainment',
+  'shopping',
+  'utilities',
+  'health',
+  'education',
+  'travel',
+  'savings',
   'other'
 ];
 
 export interface CategoryConfig {
+  id: string;
   name: string;
   color: string;
   icon: string;
+  isDefault?: boolean;
+  userId?: string;
 }
 
 // Color options for categories
@@ -48,11 +53,11 @@ export const CATEGORY_ICONS = [
 ];
 
 interface CategoryContextType {
-  categories: string[];
-  categoryConfigs: Record<string, {color: string, icon: string}>;
-  addCategory: (category: string, color: string, icon: string) => void;
-  removeCategory: (category: string) => void;
+  categories: CategoryConfig[];
+  addCategory: (category: string, color: string, icon: string) => Promise<void>;
+  removeCategory: (categoryId: string) => Promise<boolean>; // Updated to return boolean
   isDefaultCategory: (category: string) => boolean;
+  loading: boolean; // Added loading state
 }
 
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
@@ -70,103 +75,186 @@ interface CategoryProviderProps {
 }
 
 export const CategoryProvider: React.FC<CategoryProviderProps> = ({ children }) => {
-  // Initialize with default categories and any custom ones from localStorage
-  const [categories, setCategories] = useState<string[]>(() => {
-    const storedCategories = localStorage.getItem('customCategories');
-    const customCategories = storedCategories ? JSON.parse(storedCategories) : [];
-    
-    // Combine default and custom categories
-    return [...DEFAULT_CATEGORIES, ...customCategories];
-  });
-  
-  // Keep track of custom categories separately
-  const [customCategories, setCustomCategories] = useState<string[]>(() => {
-    const storedCategories = localStorage.getItem('customCategories');
-    return storedCategories ? JSON.parse(storedCategories) : [];
-  });
-  
-  // Keep track of category configurations (color, icon)
-  const [categoryConfigs, setCategoryConfigs] = useState<Record<string, {color: string, icon: string}>>(() => {
-    const storedConfigs = localStorage.getItem('categoryConfigs');
-    const defaultConfigs = {
-      'food': { color: 'red', icon: 'food' },
-      'transportation': { color: 'blue', icon: 'car' },
-      'entertainment': { color: 'purple', icon: 'entertainment' },
-      'shopping': { color: 'yellow', icon: 'shopping' },
-      'utilities': { color: 'teal', icon: 'home' },
-      'health': { color: 'green', icon: 'health' },
-      'education': { color: 'orange', icon: 'education' },
-      'travel': { color: 'pink', icon: 'travel' },
-      'savings': { color: 'blue', icon: 'savings' },
-      'other': { color: 'purple', icon: 'other' }
+  const { currentUser, loading: authLoading } = useAuth(); // Assuming useAuth provides loading
+  const [categories, setCategories] = useState<CategoryConfig[]>([]);
+  const [hiddenCategoryIds, setHiddenCategoryIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true); // Loading state for categories
+
+  // Fetch categories and user's hidden categories
+  useEffect(() => {
+    let categoriesUnsubscribe: () => void;
+    let userUnsubscribe: () => void;
+
+    setLoading(true); // Set loading to true when fetching starts
+
+    if (currentUser) {
+      // Listen for user's hidden categories
+      const userRef = doc(db, "users", currentUser.uid);
+      userUnsubscribe = onSnapshot(userRef, (doc) => {
+        if (doc.exists()) {
+          const userData = doc.data();
+          setHiddenCategoryIds(userData.hiddenCategoryIds || []);
+        } else {
+          setHiddenCategoryIds([]);
+        }
+      }, (error) => {
+        console.error("Error fetching user document:", error);
+        setHiddenCategoryIds([]); // Clear hidden categories on error
+      });
+
+      // Listen for ALL categories (both default and user's custom)
+      // We will filter by hiddenCategoryIds later
+      const categoriesRef = collection(db, "categories");
+      const q = query(categoriesRef); // Fetch all categories initially
+
+      categoriesUnsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedCategories: CategoryConfig[] = [];
+        snapshot.forEach((doc) => {
+          const categoryData = doc.data();
+          fetchedCategories.push({
+            id: doc.id,
+            name: categoryData.name,
+            color: categoryData.color,
+            icon: categoryData.icon,
+            isDefault: categoryData.isDefault || false,
+            userId: categoryData.userId
+          });
+        });
+
+        // Filter out hidden categories based on the latest hiddenCategoryIds
+        const visibleCategories = fetchedCategories.filter(
+          category => !hiddenCategoryIds.includes(category.id)
+        );
+
+        setCategories(visibleCategories);
+        setLoading(false); // Set loading to false when categories are loaded
+      }, (error) => {
+        console.error("Error fetching categories from Firebase:", error);
+        setCategories([]); // Clear categories on error
+        setLoading(false); // Set loading to false on error
+      });
+    } else {
+      // User is not logged in, clear categories and set loading to false
+      setCategories([]);
+      setHiddenCategoryIds([]);
+      setLoading(false);
+    }
+
+    // Cleanup listeners
+    return () => {
+      if (categoriesUnsubscribe) categoriesUnsubscribe();
+      if (userUnsubscribe) userUnsubscribe();
     };
-    
-    if (storedConfigs) {
-      return { ...defaultConfigs, ...JSON.parse(storedConfigs) };
-    }
-    return defaultConfigs;
-  });
-  
-  // Save custom categories to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('customCategories', JSON.stringify(customCategories));
-  }, [customCategories]);
-  
-  // Save category configs to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('categoryConfigs', JSON.stringify(categoryConfigs));
-  }, [categoryConfigs]);
-  
-  const addCategory = (category: string, color: string, icon: string) => {
-    const normalizedCategory = category.toLowerCase().trim();
-    
-    // Check if category already exists
-    if (categories.includes(normalizedCategory)) {
+  }, [currentUser, hiddenCategoryIds]); // Added hiddenCategoryIds to dependencies
+
+
+  const addCategory = async (category: string, color: string, icon: string) => {
+    if (!currentUser) {
+      console.error("User must be logged in to add categories");
+      // Consider showing a toast or other user feedback
       return;
     }
-    
-    // Add to both categories and customCategories
-    setCategories(prev => [...prev, normalizedCategory]);
-    setCustomCategories(prev => [...prev, normalizedCategory]);
-    
-    // Add configuration
-    setCategoryConfigs(prev => ({
-      ...prev,
-      [normalizedCategory]: { color, icon }
-    }));
-  };
-  
-  const removeCategory = (category: string) => {
+
     const normalizedCategory = category.toLowerCase().trim();
-    
-    // Don't allow removal of default categories
-    if (DEFAULT_CATEGORIES.includes(normalizedCategory)) {
+
+    // Check for duplicates among visible and hidden categories for the current user
+    const allUserCategories = categories.concat(
+        hiddenCategoryIds.map(id => {
+            // Find the full category object for the hidden ID if available
+            const hiddenCat = categories.find(cat => cat.id === id);
+            if (hiddenCat) return hiddenCat;
+            // If not in current categories state (maybe due to initial load or filter),
+            // create a placeholder with just the ID and assuming it's a user category
+            return { id, name: '', color: '', icon: '', isDefault: false, userId: currentUser.uid };
+        }).filter(cat => cat.userId === currentUser.uid) // Only consider user's own categories for duplicate check
+    );
+
+
+    const existingCategory = allUserCategories.find(
+      c => c.name === normalizedCategory
+    );
+
+    if (existingCategory) {
+      console.error("Category already exists for this user");
+      // Consider showing a toast or other user feedback
       return;
     }
-    
-    // Remove from both categories and customCategories
-    setCategories(prev => prev.filter(c => c !== normalizedCategory));
-    setCustomCategories(prev => prev.filter(c => c !== normalizedCategory));
-    
-    // Remove configuration
-    setCategoryConfigs(prev => {
-      const newConfigs = { ...prev };
-      delete newConfigs[normalizedCategory];
-      return newConfigs;
-    });
+
+    try {
+      await addDoc(collection(db, "categories"), {
+        name: normalizedCategory,
+        color,
+        icon,
+        userId: currentUser.uid, // Assign category to the current user
+        isDefault: false // User-added categories are not default
+      });
+      // Consider showing a success toast here
+    } catch (error) {
+      console.error("Error adding category:", error);
+      // Consider showing an error toast here
+      throw error; // Re-throw to allow component to handle
+    }
   };
-  
-  const isDefaultCategory = (category: string) => {
-    return DEFAULT_CATEGORIES.includes(category.toLowerCase().trim());
+
+  // removeCategory now performs soft delete by adding categoryId to hiddenCategoryIds
+  const removeCategory = async (categoryId: string): Promise<boolean> => {
+    if (!currentUser) {
+      console.error("User must be logged in to remove categories");
+      return false; // Indicate failure
+    }
+
+    // Check if the category is linked to transactions
+    const hasLinkedTransactions = await hasTransactions(categoryId);
+    if (hasLinkedTransactions) {
+      console.error("Cannot hide category: It is linked to transactions");
+      return false; // Indicate failure
+    }
+
+    try {
+      await hideCategoryForUser(currentUser.uid, categoryId);
+      return true; // Indicate success
+    } catch (error) {
+      console.error("Error hiding category:", error);
+      return false; // Indicate failure
+    }
   };
-  
+
+  const hasTransactions = async (categoryId: string): Promise<boolean> => {
+    try {
+      const transactionsRef = collection(db, "transactions");
+      const q = query(transactionsRef, where("categoryId", "==", categoryId));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking for transactions:", error);
+      // In case of error, assume it has transactions to be safe
+      return true;
+    }
+  };
+
+  const hideCategoryForUser = async (userId: string, categoryId: string) => {
+    try {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, {
+        hiddenCategoryIds: arrayUnion(categoryId)
+      });
+    } catch (error) {
+      console.error("Error hiding category:", error);
+      throw error; // Re-throw to allow calling function to handle
+    }
+  };
+
+  const isDefaultCategory = (categoryName: string): boolean => {
+     return DEFAULT_CATEGORIES.includes(categoryName.toLowerCase().trim());
+  };
+
   return (
-    <CategoryContext.Provider value={{ 
+    <CategoryContext.Provider value={{
       categories,
-      categoryConfigs,
       addCategory,
       removeCategory,
-      isDefaultCategory
+      isDefaultCategory,
+      loading // Provide loading state
     }}>
       {children}
     </CategoryContext.Provider>

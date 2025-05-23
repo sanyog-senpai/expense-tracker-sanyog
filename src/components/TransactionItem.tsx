@@ -58,7 +58,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   };
   
   return (
-    <Link to={`/transaction/${transaction.id}`}>
+    <Link to={`/transactions/${transaction.id}`}>
       <motion.div
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
@@ -84,7 +84,11 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
                   )} */}
                 </div>
                 <div className="flex items-center mt-1 space-x-2">
-                  <p className="text-white/50 text-2xs">{formatTime(transaction.date)}</p>
+                  <p className="text-white/50 text-2xs">
+                    {transaction.date
+                      ? formatTime(transaction.date)
+                      : 'N/A'}
+                  </p>
                   <CategoryPill 
                     category={transaction.category} 
                     extraSmall 

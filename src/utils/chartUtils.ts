@@ -1,5 +1,5 @@
 
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isToday, isYesterday } from 'date-fns';
 import { Transaction } from '@/context/TransactionContext';
 
 export interface ChartDataItem {
@@ -8,6 +8,35 @@ export interface ChartDataItem {
   count: number;
   color?: string;
 }
+
+// Function to format the date
+export const formatDate = (dateStr: string): string => {
+  // Add this validation check:
+  if (!dateStr || typeof dateStr !== 'string' || new Date(dateStr).toString() === 'Invalid Date') {
+    return 'N/A'; // Return 'N/A' for invalid or empty date strings
+  }
+
+  const date = new Date(dateStr);
+
+  if (isToday(date)) {
+    return 'Today';
+  } else if (isYesterday(date)) {
+    return 'Yesterday';
+  } else {
+    return format(date, 'MMMM dd, yyyy');
+  }
+};
+
+// Function to format the time
+export const formatTime = (dateStr: string): string => {
+  // Add this validation check:
+  if (!dateStr || typeof dateStr !== 'string' || new Date(dateStr).toString() === 'Invalid Date') {
+    return 'N/A'; // Return 'N/A' for invalid or empty date strings
+  }
+
+  const date = new Date(dateStr);
+  return format(date, 'h:mm a');
+};
 
 export interface ComparisonChartDataItem {
   name: string;
@@ -29,7 +58,7 @@ export const prepareChartData = (
   yearFilter: string
 ): ChartDataType => {
   let filteredTransactions: Transaction[];
-  
+
   if (dataType === 'expenses') {
     filteredTransactions = transactions.filter(t => t.isExpense && !t.isSavings);
   } else if (dataType === 'income') {
@@ -37,14 +66,14 @@ export const prepareChartData = (
   } else { // savings
     filteredTransactions = transactions.filter(t => t.isSavings);
   }
-  
+
   // If we're not doing comparison, process data by category
   if (comparisonType === 'none') {
     interface CategoryData {
       amount: number;
       count: number;
     }
-    
+
     const groupedByCategory: Record<string, CategoryData> = filteredTransactions.reduce((acc: Record<string, CategoryData>, transaction) => {
       const { category, amount } = transaction;
       if (!acc[category]) {
@@ -54,60 +83,66 @@ export const prepareChartData = (
       acc[category].count += 1;
       return acc;
     }, {});
-    
+
     return Object.entries(groupedByCategory).map(([name, data]) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
       value: data.amount,
       count: data.count
     })) as ChartDataItem[];
   }
-  
+
   // For comparisons, we need to group data differently
   if (comparisonType === 'month') {
     // Group by month for the selected year
-    const groupedByMonth: Record<string, { 
-      expenses: number, 
-      income: number, 
+    const groupedByMonth: Record<string, {
+      expenses: number,
+      income: number,
       savings: number,
       expenseCount: number,
       incomeCount: number,
-      savingsCount: number 
+      savingsCount: number
     }> = {};
-    
+
     // Initialize all months
     for (let i = 0; i < 12; i++) {
       const monthName = format(new Date(parseInt(yearFilter), i, 1), 'MMM');
-      groupedByMonth[monthName] = { 
-        expenses: 0, 
-        income: 0, 
+      groupedByMonth[monthName] = {
+        expenses: 0,
+        income: 0,
         savings: 0,
         expenseCount: 0,
         incomeCount: 0,
         savingsCount: 0
       };
     }
-    
+
     // Fill with actual data
     transactions.forEach(t => {
-      const date = parseISO(t.date);
-      const year = format(date, 'yyyy');
-      
-      if (year === yearFilter) {
-        const month = format(date, 'MMM');
-        
-        if (t.isExpense && !t.isSavings) {
-          groupedByMonth[month].expenses += t.amount;
-          groupedByMonth[month].expenseCount += 1;
-        } else if (!t.isExpense) {
-          groupedByMonth[month].income += t.amount;
-          groupedByMonth[month].incomeCount += 1;
-        } else if (t.isSavings) {
-          groupedByMonth[month].savings += t.amount;
-          groupedByMonth[month].savingsCount += 1;
+      // Add this check:
+      if (t.date && typeof t.date === 'string' && t.date !== '') {
+        const date = parseISO(t.date);
+        const year = format(date, 'yyyy');
+
+
+        if (year === yearFilter) {
+          const month = format(date, 'MMM');
+
+          if (t.isExpense && !t.isSavings) {
+            groupedByMonth[month].expenses += t.amount;
+            groupedByMonth[month].expenseCount += 1;
+          } else if (!t.isExpense) {
+            groupedByMonth[month].income += t.amount;
+            groupedByMonth[month].incomeCount += 1;
+          } else if (t.isSavings) {
+            groupedByMonth[month].savings += t.amount;
+            groupedByMonth[month].savingsCount += 1;
+          }
         }
       }
+      // If t.date is invalid/empty, this transaction will be skipped for month grouping
     });
-    
+
+
     // Convert to array for recharts
     return Object.entries(groupedByMonth).map(([month, data]) => ({
       name: month,
@@ -119,32 +154,32 @@ export const prepareChartData = (
       savingsCount: data.savingsCount
     })) as ComparisonChartDataItem[];
   }
-  
+
   if (comparisonType === 'year') {
     // Group by year
-    const groupedByYear: Record<string, { 
-      expenses: number, 
-      income: number, 
+    const groupedByYear: Record<string, {
+      expenses: number,
+      income: number,
       savings: number,
       expenseCount: number,
       incomeCount: number,
       savingsCount: number
     }> = {};
-    
+
     transactions.forEach(t => {
       const year = format(parseISO(t.date), 'yyyy');
-      
+
       if (!groupedByYear[year]) {
-        groupedByYear[year] = { 
-          expenses: 0, 
-          income: 0, 
+        groupedByYear[year] = {
+          expenses: 0,
+          income: 0,
           savings: 0,
           expenseCount: 0,
           incomeCount: 0,
           savingsCount: 0
         };
       }
-      
+
       if (t.isExpense && !t.isSavings) {
         groupedByYear[year].expenses += t.amount;
         groupedByYear[year].expenseCount += 1;
@@ -156,7 +191,7 @@ export const prepareChartData = (
         groupedByYear[year].savingsCount += 1;
       }
     });
-    
+
     // Convert to array for recharts
     return Object.entries(groupedByYear).map(([year, data]) => ({
       name: year,
@@ -168,13 +203,13 @@ export const prepareChartData = (
       savingsCount: data.savingsCount
     })).sort((a, b) => parseInt(a.name) - parseInt(b.name)) as ComparisonChartDataItem[]; // Sort by year ascending
   }
-  
+
   if (comparisonType === 'combined') {
     // Group by transaction type and sum up the total
     const expenseTransactions = transactions.filter(t => t.isExpense && !t.isSavings);
     const incomeTransactions = transactions.filter(t => !t.isExpense);
     const savingsTransactions = transactions.filter(t => t.isSavings);
-    
+
     const totals = {
       expenses: expenseTransactions.reduce((sum, t) => sum + t.amount, 0),
       income: incomeTransactions.reduce((sum, t) => sum + t.amount, 0),
@@ -183,29 +218,29 @@ export const prepareChartData = (
       incomeCount: incomeTransactions.length,
       savingsCount: savingsTransactions.length
     };
-    
+
     return [
-      { 
-        name: 'Expenses', 
-        value: totals.expenses, 
+      {
+        name: 'Expenses',
+        value: totals.expenses,
         count: totals.expenseCount,
-        color: '#ff6b8b' 
+        color: '#ff6b8b'
       },
-      { 
-        name: 'Income', 
-        value: totals.income, 
+      {
+        name: 'Income',
+        value: totals.income,
         count: totals.incomeCount,
-        color: '#6bffb8' 
+        color: '#6bffb8'
       },
-      { 
-        name: 'Savings', 
-        value: totals.savings, 
+      {
+        name: 'Savings',
+        value: totals.savings,
         count: totals.savingsCount,
-        color: '#5271ff' 
+        color: '#5271ff'
       }
     ] as ChartDataItem[];
   }
-  
+
   return [] as ChartDataItem[];
 };
 
@@ -221,7 +256,7 @@ export const calculateTotalAmount = (
     } else if ('expenses' in chartData[0]) {
       // Comparison data (monthly/yearly)
       const data = chartData as ComparisonChartDataItem[];
-      
+
       // Sum based on the selected data type
       if (dataType === 'expenses') {
         return data.reduce((sum, item) => sum + item.expenses, 0);
@@ -247,8 +282,26 @@ export const formatYAxisTick = (value: number): string => {
 export const getAvailableYears = (transactions: Transaction[]): string[] => {
   const years = new Set<string>();
   transactions.forEach(t => {
-    const year = format(parseISO(t.date), 'yyyy');
-    years.add(year);
+    // Add this check:
+    if (t.date && typeof t.date === 'string' && t.date !== '') {
+      const year = format(parseISO(t.date), 'yyyy');
+      years.add(year);
+    }
+    // If t.date is invalid/empty, its year will not be added to the set
   });
   return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
+};
+
+
+export const groupTransactionsByDate = (transactions: any[]) => {
+  return transactions.reduce((groups: any, transaction: any) => {
+    // This line will now call the corrected formatDate
+    const date = formatDate(transaction.date);
+    // ... rest of groupTransactionsByDate
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(transaction);
+    return groups;
+  }, {});
 };
